@@ -38,17 +38,23 @@ export default async function DashboardPage() {
             </div>
             <div className="flex items-center space-x-4">
               <Link
+                href="/challenges"
+                className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              >
+                Challenges
+              </Link>
+              <Link
                 href="/profile"
                 className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               >
-                My Profile
+                Profile
               </Link>
               {admin && (
                 <Link
                   href="/admin"
                   className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                 >
-                  Admin Panel
+                  Admin
                 </Link>
               )}
               <form action="/auth/signout" method="post">
