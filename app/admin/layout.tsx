@@ -1,6 +1,9 @@
 import { redirect } from 'next/navigation'
 import { requireAdmin } from '@/lib/utils/admin'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { Shield, Users, Calendar, TrendingUp, LayoutDashboard } from 'lucide-react'
+import Navigation from '@/components/Navigation'
 
 export default async function AdminLayout({
   children,
@@ -15,47 +18,45 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <Navigation isAdmin={true} />
+
+      {/* Admin Sub-navigation */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex space-x-8">
-              <Link
-                href="/admin"
-                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 dark:text-white"
-              >
-                Admin Dashboard
-              </Link>
-              <Link
-                href="/admin/users"
-                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              >
-                Users
-              </Link>
-              <Link
-                href="/admin/seasons"
-                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              >
-                Seasons
-              </Link>
-              <Link
-                href="/admin/ladder"
-                className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              >
-                Manage Ladder
-              </Link>
-            </div>
-            <div className="flex items-center">
-              <Link
-                href="/dashboard"
-                className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              >
-                Back to Ladder
-              </Link>
-            </div>
+          <div className="flex space-x-1 py-2">
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              Dashboard
+            </Link>
+            <Link
+              href="/admin/users"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <Users className="w-4 h-4" />
+              Users
+            </Link>
+            <Link
+              href="/admin/seasons"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <Calendar className="w-4 h-4" />
+              Seasons
+            </Link>
+            <Link
+              href="/admin/ladder"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <TrendingUp className="w-4 h-4" />
+              Ladder
+            </Link>
           </div>
         </div>
-      </nav>
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">{children}</main>
+      </div>
+
+      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">{children}</main>
     </div>
   )
 }
