@@ -34,7 +34,7 @@ export default async function DashboardPage() {
             </h2>
             <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-400">
               <li>Wait for an admin to add you to the ladder</li>
-              <li>Once added, you'll be able to challenge other players</li>
+              <li>Once added, you&apos;ll be able to challenge other players</li>
               <li>Track your progress and stats</li>
             </ul>
           </div>
