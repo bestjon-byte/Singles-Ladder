@@ -45,7 +45,7 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
-      // Create auth user
+      // Create auth user (trigger will automatically create profile)
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -60,19 +60,8 @@ export default function SignupPage() {
       if (authError) throw authError
 
       if (authData.user) {
-        // Create user profile
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: authData.user.id,
-            email: formData.email,
-            name: formData.name,
-            whatsapp_number: formData.whatsappNumber || null,
-          })
-
-        if (profileError) throw profileError
-
-        // Redirect to a waiting page or dashboard
+        // Profile is automatically created by database trigger
+        // Redirect to dashboard
         router.push('/dashboard?welcome=true')
         router.refresh()
       }
