@@ -34,7 +34,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # Production (Vercel)
-NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
+NEXT_PUBLIC_APP_URL=https://singles-ladder.vercel.app
 ```
 
 ### Email Service (To be configured - Phase 4)
@@ -63,6 +63,20 @@ FROM_EMAIL=noreply@tennisladder.com
 **Row Level Security (RLS):** ENABLED on all tables
 - Users can view their own data
 - Admins have full access (checked via `is_admin()` function)
+
+### URL Configuration (IMPORTANT for Auth)
+
+**Path:** Authentication → URL Configuration in Supabase Dashboard
+
+**Site URL:**
+- Development: `http://localhost:3000`
+- Production: `https://singles-ladder.vercel.app`
+
+**Redirect URLs (Allowed):**
+- `http://localhost:3000/**` (development)
+- `https://singles-ladder.vercel.app/**` (production)
+
+**Note:** Without these configured, password reset and magic links will fail with `access_denied` or `otp_expired` errors.
 
 ---
 
@@ -355,6 +369,7 @@ WHERE is_active = TRUE;
 ### Vercel Configuration
 
 **Project:** Singles-Ladder
+**Production URL:** https://singles-ladder.vercel.app
 **GitHub Repo:** bestjon-byte/Singles-Ladder
 **Production Branch:** main
 
