@@ -41,11 +41,17 @@ export default async function AdminLadderPage() {
 
   // Get all users who are NOT in the ladder
   const usersInLadder = positions?.map(p => p.user_id) || []
-  const { data: availableUsers } = await supabase
+
+  let availableUsersQuery = supabase
     .from('users')
     .select('*')
-    .not('id', 'in', `(${usersInLadder.length > 0 ? usersInLadder.join(',') : 'null'})`)
-    .order('name', { ascending: true })
+
+  // Only filter out users if there are actually users in the ladder
+  if (usersInLadder.length > 0) {
+    availableUsersQuery = availableUsersQuery.not('id', 'in', `(${usersInLadder.join(',')})`)
+  }
+
+  const { data: availableUsers } = await availableUsersQuery.order('name', { ascending: true })
 
   return (
     <div className="px-4 sm:px-0">
