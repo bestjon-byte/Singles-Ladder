@@ -1,10 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import ChallengesList from '@/components/challenges/ChallengesList'
-import CreateChallengeButton from '@/components/challenges/CreateChallengeButton'
+import MatchesList from '@/components/matches/MatchesList'
 
-export default async function ChallengesPage() {
+export default async function MatchesPage() {
   const supabase = await createClient()
 
   const { data: { user }, error } = await supabase.auth.getUser()
@@ -13,17 +12,10 @@ export default async function ChallengesPage() {
     redirect('/auth/login')
   }
 
-  // Get user profile
-  const { data: profile } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', user.id)
-    .single()
-
   // Get active season
   const { data: activeSeason } = await supabase
     .from('seasons')
-    .select('id, name, wildcards_per_player')
+    .select('id, name')
     .eq('is_active', true)
     .single()
 
@@ -35,7 +27,7 @@ export default async function ChallengesPage() {
             <div className="flex justify-between h-16">
               <div className="flex items-center">
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Challenges
+                  Matches
                 </h1>
               </div>
               <div className="flex items-center">
@@ -52,7 +44,7 @@ export default async function ChallengesPage() {
         <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <p className="text-gray-600 dark:text-gray-400">
-              No active season. Challenges will be available once a season starts.
+              No active season. Matches will be available once a season starts.
             </p>
           </div>
         </main>
@@ -60,35 +52,19 @@ export default async function ChallengesPage() {
     )
   }
 
-  // Check if user is on the ladder
-  const { data: ladderPosition } = await supabase
-    .from('ladder_positions')
-    .select('position')
-    .eq('season_id', activeSeason.id)
-    .eq('user_id', user.id)
-    .eq('is_active', true)
-    .single()
-
-  // Get all challenges for this user
-  const { data: challenges } = await supabase
-    .from('challenges')
+  // Get all matches for this user
+  const { data: matches } = await supabase
+    .from('matches')
     .select(`
       *,
-      challenger:users!challenges_challenger_id_fkey(id, name, email),
-      challenged:users!challenges_challenged_id_fkey(id, name, email)
+      player1:users!matches_player1_id_fkey(id, name, email),
+      player2:users!matches_player2_id_fkey(id, name, email),
+      winner:users!matches_winner_id_fkey(id, name),
+      challenge:challenges(id, is_wildcard)
     `)
     .eq('season_id', activeSeason.id)
-    .or(`challenger_id.eq.${user.id},challenged_id.eq.${user.id}`)
-    .order('created_at', { ascending: false })
-
-  // Get wildcards remaining
-  const { data: wildcardsUsed } = await supabase
-    .from('wildcard_usage')
-    .select('id')
-    .eq('season_id', activeSeason.id)
-    .eq('user_id', user.id)
-
-  const wildcardsRemaining = activeSeason.wildcards_per_player - (wildcardsUsed?.length || 0)
+    .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
+    .order('match_date', { ascending: false })
 
   // Check if user has admin access
   const { data: admin } = await supabase
@@ -105,7 +81,7 @@ export default async function ChallengesPage() {
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Challenges
+                Matches
               </h1>
             </div>
             <div className="flex items-center space-x-4">
@@ -116,10 +92,10 @@ export default async function ChallengesPage() {
                 Ladder
               </Link>
               <Link
-                href="/matches"
+                href="/challenges"
                 className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               >
-                Matches
+                Challenges
               </Link>
               <Link
                 href="/profile"
@@ -142,44 +118,19 @@ export default async function ChallengesPage() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 sm:px-0">
-          {/* Header with Create Challenge Button */}
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                My Challenges
-              </h2>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {ladderPosition ? (
-                  <>
-                    Your position: #{ladderPosition.position} • Wildcards remaining: {wildcardsRemaining}/{activeSeason.wildcards_per_player}
-                  </>
-                ) : (
-                  'You must be on the ladder to create challenges'
-                )}
-              </p>
-            </div>
-            {ladderPosition && (
-              <CreateChallengeButton
-                seasonId={activeSeason.id}
-                userPosition={ladderPosition.position}
-                wildcardsRemaining={wildcardsRemaining}
-              />
-            )}
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              My Matches
+            </h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {activeSeason.name}
+            </p>
           </div>
 
-          {/* Challenges List */}
-          {!ladderPosition ? (
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-              <p className="text-gray-600 dark:text-gray-400">
-                You must be added to the ladder by an admin before you can create or receive challenges.
-              </p>
-            </div>
-          ) : (
-            <ChallengesList
-              challenges={challenges || []}
-              currentUserId={user.id}
-            />
-          )}
+          <MatchesList
+            matches={matches || []}
+            currentUserId={user.id}
+          />
         </div>
       </main>
     </div>

@@ -200,10 +200,28 @@ export async function acceptChallenge(challengeId: string) {
       return { error: 'Failed to accept challenge' }
     }
 
-    // TODO: Create match fixture (Phase 3)
+    // Create match fixture
+    const { error: matchError } = await supabase
+      .from('matches')
+      .insert({
+        challenge_id: challengeId,
+        season_id: challenge.season_id,
+        player1_id: challenge.challenger_id,
+        player2_id: challenge.challenged_id,
+        match_type: 'challenge',
+        match_date: challenge.proposed_date,
+        location: challenge.proposed_location,
+      })
+
+    if (matchError) {
+      console.error('Error creating match:', matchError)
+      // Don't fail the whole operation if match creation fails
+    }
+
     // TODO: Create notification for challenger (Phase 4)
 
     revalidatePath('/challenges')
+    revalidatePath('/matches')
     revalidatePath('/dashboard')
 
     return { success: true }

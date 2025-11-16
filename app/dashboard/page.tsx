@@ -44,6 +44,12 @@ export default async function DashboardPage() {
                 Challenges
               </Link>
               <Link
+                href="/matches"
+                className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              >
+                Matches
+              </Link>
+              <Link
                 href="/profile"
                 className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               >
