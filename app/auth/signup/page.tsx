@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
-export const dynamic = 'force-dynamic'
-
 export default function SignupPage() {
   const [formData, setFormData] = useState({
     name: '',
