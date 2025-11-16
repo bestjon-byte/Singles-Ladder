@@ -1,4 +1,4 @@
-# Tennis Singles Ladder
+# Tennis Singles Ladder 2
 
 A mobile-optimized web application for managing tennis club ladders independently, featuring player challenges, automated ladder updates, match scheduling, playoffs, and comprehensive statistics tracking.
 
