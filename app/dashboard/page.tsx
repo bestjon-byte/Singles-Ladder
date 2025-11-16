@@ -25,9 +25,13 @@ export default async function DashboardPage() {
     .eq('user_id', user.id)
     .maybeSingle()
 
-  if (adminError) {
-    console.error('Admin check error:', adminError)
-  }
+  console.log('=== ADMIN CHECK DEBUG ===')
+  console.log('User ID:', user.id)
+  console.log('User Email:', user.email)
+  console.log('Admin data:', admin)
+  console.log('Admin error:', adminError)
+  console.log('Is admin?', !!admin)
+  console.log('=========================')
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
