@@ -91,9 +91,7 @@ CREATE TABLE ladder_positions (
   joined_at TIMESTAMPTZ DEFAULT NOW(),
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  CONSTRAINT unique_active_position UNIQUE (season_id, position) WHERE is_active = TRUE,
-  CONSTRAINT unique_active_user UNIQUE (season_id, user_id) WHERE is_active = TRUE
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Challenges table
@@ -241,6 +239,10 @@ CREATE TABLE head_to_head_stats (
 CREATE INDEX idx_ladder_positions_season ON ladder_positions(season_id);
 CREATE INDEX idx_ladder_positions_user ON ladder_positions(user_id);
 CREATE INDEX idx_ladder_positions_active ON ladder_positions(season_id, position) WHERE is_active = TRUE;
+
+-- Partial unique indexes for active ladder positions
+CREATE UNIQUE INDEX unique_active_position ON ladder_positions(season_id, position) WHERE is_active = TRUE;
+CREATE UNIQUE INDEX unique_active_user ON ladder_positions(season_id, user_id) WHERE is_active = TRUE;
 
 CREATE INDEX idx_challenges_season ON challenges(season_id);
 CREATE INDEX idx_challenges_challenger ON challenges(challenger_id);
