@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -17,8 +18,52 @@ export default async function DashboardPage() {
     .eq('id', user.id)
     .single()
 
+  // Check if user is admin
+  const { data: admin } = await supabase
+    .from('admins')
+    .select('id')
+    .eq('user_id', user.id)
+    .single()
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Navigation */}
+      <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Tennis Singles Ladder
+              </h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/profile"
+                className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              >
+                My Profile
+              </Link>
+              {admin && (
+                <Link
+                  href="/admin"
+                  className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                >
+                  Admin Panel
+                </Link>
+              )}
+              <form action="/auth/signout" method="post">
+                <button
+                  type="submit"
+                  className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                >
+                  Sign out
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
@@ -37,17 +82,6 @@ export default async function DashboardPage() {
               <li>Once added, you&apos;ll be able to challenge other players</li>
               <li>Track your progress and stats</li>
             </ul>
-          </div>
-
-          <div className="mt-8">
-            <form action="/auth/signout" method="post">
-              <button
-                type="submit"
-                className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                Sign out
-              </button>
-            </form>
           </div>
         </div>
       </div>
