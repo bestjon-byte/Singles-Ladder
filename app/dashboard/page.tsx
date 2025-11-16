@@ -45,24 +45,24 @@ export default async function DashboardPage() {
   // Get total ladder players
   const { count: totalPlayers } = await supabase
     .from('ladder')
-    .select('*', { count: 'only', head: true })
+    .select('*', { count: 'exact', head: true })
     .eq('season_id', season?.id || '')
 
   // Get user's match stats
-  const { data: wonMatches, count: wins } = await supabase
+  const { count: wins } = await supabase
     .from('matches')
-    .select('*', { count: 'only', head: true })
+    .select('*', { count: 'exact', head: true })
     .eq('winner_id', user.id)
 
-  const { data: allMatches, count: totalMatches } = await supabase
+  const { count: totalMatches } = await supabase
     .from('matches')
-    .select('*', { count: 'only', head: true })
+    .select('*', { count: 'exact', head: true })
     .or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`)
 
   // Get pending challenges
   const { count: pendingChallenges } = await supabase
     .from('challenges')
-    .select('*', { count: 'only', head: true })
+    .select('*', { count: 'exact', head: true })
     .or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`)
     .eq('status', 'pending')
 
