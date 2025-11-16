@@ -19,11 +19,15 @@ export default async function DashboardPage() {
     .single()
 
   // Check if user is admin
-  const { data: admin } = await supabase
+  const { data: admin, error: adminError } = await supabase
     .from('admins')
     .select('id')
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
+
+  if (adminError) {
+    console.error('Admin check error:', adminError)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
