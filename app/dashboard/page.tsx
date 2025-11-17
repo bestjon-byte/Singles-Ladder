@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Navigation from '@/components/Navigation'
 import InteractiveLadder from '@/components/ladder/InteractiveLadder'
-import { Trophy, Target, Award, TrendingUp, Medal, Zap } from 'lucide-react'
+import { Trophy, Target, TrendingUp, Zap } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -186,8 +186,8 @@ export default async function DashboardPage() {
             </p>
           </div>
 
-          {/* Win Rate */}
-          <div className="card p-6 group hover:border-primary-200 dark:hover:border-primary-800">
+          {/* Win Rate & Match History */}
+          <Link href="/matches" className="card p-6 group hover:border-primary-200 dark:hover:border-primary-800 cursor-pointer transition-all hover:shadow-lg">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -199,10 +199,13 @@ export default async function DashboardPage() {
             <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
               Win Rate
             </h3>
-            <p className="text-2xl font-heading font-bold text-gray-900 dark:text-white">
+            <p className="text-2xl font-heading font-bold text-gray-900 dark:text-white mb-2">
               {wins || 0} / {totalMatches || 0} wins
             </p>
-          </div>
+            <p className="text-xs text-primary-600 dark:text-primary-400 font-medium group-hover:underline">
+              View Match History →
+            </p>
+          </Link>
 
           {/* Pending Challenges */}
           <div className="card p-6 group hover:border-primary-200 dark:hover:border-primary-800">
@@ -243,57 +246,6 @@ export default async function DashboardPage() {
               {availableWildcards}
             </p>
           </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Link href="/challenges" className="card-interactive p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-lg bg-gradient-purple flex items-center justify-center">
-                <Target className="w-7 h-7 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-heading font-semibold text-gray-900 dark:text-white mb-1">
-                  View Challenges
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Manage your active challenges
-                </p>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/matches" className="card-interactive p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-lg bg-green-600 flex items-center justify-center">
-                <Award className="w-7 h-7 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-heading font-semibold text-gray-900 dark:text-white mb-1">
-                  Match History
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  View your match results
-                </p>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/profile" className="card-interactive p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-lg bg-blue-600 flex items-center justify-center">
-                <Medal className="w-7 h-7 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-heading font-semibold text-gray-900 dark:text-white mb-1">
-                  Your Profile
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Update your information
-                </p>
-              </div>
-            </div>
-          </Link>
         </div>
 
         {/* Interactive Ladder */}
