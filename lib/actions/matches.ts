@@ -164,21 +164,28 @@ async function updateLadderPositions(
 
   if (!winnerPos || !loserPos) return
 
-  // Winner moves to position just above loser
+  // Winner takes the loser's position, loser and everyone in between moves down
   if (winnerPos.position > loserPos.position) {
     const newWinnerPosition = loserPos.position
+    const oldWinnerPosition = winnerPos.position
 
-    // Get all players between loser and winner (inclusive of loser, exclusive of winner)
+    // Step 1: Move winner to a temporary position to avoid conflicts
+    await supabase
+      .from('ladder_positions')
+      .update({ position: -1 })
+      .eq('id', winnerPos.id)
+
+    // Step 2: Get all players between loser and winner (inclusive of loser, exclusive of old winner position)
     const { data: playersToShift } = await supabase
       .from('ladder_positions')
-      .select('id, position')
+      .select('id, user_id, position')
       .eq('season_id', seasonId)
       .eq('is_active', true)
       .gte('position', loserPos.position)
-      .lt('position', winnerPos.position)
+      .lt('position', oldWinnerPosition)
       .order('position', { ascending: false })
 
-    // Shift everyone down by 1
+    // Step 3: Shift everyone down by 1 (in reverse order to avoid conflicts)
     if (playersToShift && playersToShift.length > 0) {
       for (const player of playersToShift) {
         await supabase
@@ -188,19 +195,19 @@ async function updateLadderPositions(
       }
     }
 
-    // Move winner to new position
+    // Step 4: Move winner to new position
     await supabase
       .from('ladder_positions')
       .update({ position: newWinnerPosition })
       .eq('id', winnerPos.id)
 
-    // Record in ladder history
+    // Step 5: Record in ladder history
     await supabase
       .from('ladder_history')
       .insert({
         season_id: seasonId,
         user_id: winnerId,
-        previous_position: winnerPos.position,
+        previous_position: oldWinnerPosition,
         new_position: newWinnerPosition,
         change_reason: 'match_result',
       })

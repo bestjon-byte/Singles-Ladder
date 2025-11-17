@@ -139,15 +139,15 @@ export default function InteractiveLadder({
                   <div className={`
                     w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg
                     ${isCurrent
-                      ? 'bg-gradient-purple text-white'
+                      ? 'bg-blue-600 dark:bg-blue-500 text-white'
                       : isChallengeable
-                      ? 'bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200'
+                      ? 'bg-green-200 dark:bg-green-700 text-green-900 dark:text-green-100'
                       : needsWildcard
-                      ? 'bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                      ? 'bg-purple-200 dark:bg-purple-700 text-purple-900 dark:text-purple-100'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                     }
                   `}>
-                    {player.position === 1 ? <Trophy className="w-6 h-6" /> : `#${player.position}`}
+                    #{player.position}
                   </div>
 
                   <div>

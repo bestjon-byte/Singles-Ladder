@@ -58,14 +58,20 @@ export async function createChallenge(params: CreateChallengeParams) {
     }
 
     // Validate challenge rules
+    const positionDiff = challengerPosition.position - challengedPosition.position
+
+    // Cannot challenge players below you (or at same position)
+    if (positionDiff <= 0) {
+      return { error: 'You can only challenge players above you on the ladder' }
+    }
+
     if (!params.isWildcard) {
       // Normal challenge: can only challenge players within 2 positions above
-      const positionDiff = challengerPosition.position - challengedPosition.position
-      if (positionDiff <= 0 || positionDiff > 2) {
+      if (positionDiff > 2) {
         return { error: 'You can only challenge players 1-2 positions above you (use a wildcard to challenge others)' }
       }
     } else {
-      // Wildcard challenge: check if user has wildcards available
+      // Wildcard challenge: can challenge anyone above, but need wildcards available
       const { data: wildcardsUsed } = await supabase
         .from('wildcard_usage')
         .select('id')

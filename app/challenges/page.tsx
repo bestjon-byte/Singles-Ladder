@@ -63,7 +63,7 @@ export default async function ChallengesPage() {
     .eq('is_active', true)
     .single()
 
-  // Get all challenges for this user
+  // Get active challenges for this user (exclude completed, rejected, and withdrawn)
   const { data: challenges } = await supabase
     .from('challenges')
     .select(`
@@ -73,6 +73,7 @@ export default async function ChallengesPage() {
     `)
     .eq('season_id', activeSeason.id)
     .or(`challenger_id.eq.${user.id},challenged_id.eq.${user.id}`)
+    .in('status', ['pending', 'accepted'])
     .order('created_at', { ascending: false })
 
   // Get wildcards remaining

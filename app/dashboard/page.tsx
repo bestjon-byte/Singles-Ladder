@@ -87,23 +87,32 @@ export default async function DashboardPage() {
     user: Array.isArray(player.user) ? player.user[0] : player.user
   })) || []
 
-  // Get user's match stats
+  // Get user's match stats (only count completed matches with a winner)
   const { count: wins } = await supabase
     .from('matches')
     .select('*', { count: 'exact', head: true })
     .eq('winner_id', user.id)
+    .not('winner_id', 'is', null)
 
   const { count: totalMatches } = await supabase
     .from('matches')
     .select('*', { count: 'exact', head: true })
-    .or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`)
+    .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
+    .not('winner_id', 'is', null)
 
-  // Get pending challenges
-  const { count: pendingChallenges } = await supabase
+  // Get pending challenges with full details
+  const { data: pendingChallengesData } = await supabase
     .from('challenges')
-    .select('*', { count: 'exact', head: true })
-    .or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`)
+    .select(`
+      *,
+      challenger:users!challenges_challenger_id_fkey(id, name),
+      challenged:users!challenges_challenged_id_fkey(id, name)
+    `)
+    .or(`challenger_id.eq.${user.id},challenged_id.eq.${user.id}`)
     .eq('status', 'pending')
+
+  const pendingChallenges = pendingChallengesData?.length || 0
+  const challengesToAccept = pendingChallengesData?.filter(c => c.challenged_id === user.id) || []
 
   const winRate = totalMatches ? Math.round(((wins || 0) / totalMatches) * 100) : 0
 
@@ -121,6 +130,36 @@ export default async function DashboardPage() {
             {season ? `${season.name} season is live` : 'No active season'}
           </p>
         </div>
+
+        {/* Pending Challenges Alert */}
+        {challengesToAccept.length > 0 && (
+          <Link href="/challenges" className="block mb-8">
+            <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg p-6 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] cursor-pointer">
+              <div className="flex items-center gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                    <Target className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-heading font-bold text-white mb-1">
+                    {challengesToAccept.length === 1 ? 'Challenge Waiting!' : `${challengesToAccept.length} Challenges Waiting!`}
+                  </h3>
+                  <p className="text-white/90 text-lg">
+                    {challengesToAccept.length === 1
+                      ? `${(challengesToAccept[0].challenger as any)?.name} has challenged you`
+                      : `You have ${challengesToAccept.length} challenges waiting to be accepted`}
+                  </p>
+                </div>
+                <div className="flex-shrink-0">
+                  <div className="px-6 py-3 bg-white text-orange-600 rounded-lg font-semibold hover:bg-white/90 transition-colors">
+                    View Now
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Link>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
