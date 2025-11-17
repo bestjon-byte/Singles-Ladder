@@ -12,6 +12,11 @@ This directory contains the database migrations for the Tennis Singles Ladder ap
    - `migrations/20250116_001_initial_schema.sql`
    - `migrations/20250116_002_rls_policies.sql`
    - `migrations/20250116_003_functions.sql`
+   - `migrations/20250116_004_fix_users_insert_policy.sql`
+   - `migrations/20250116_005_auto_create_user_profile.sql`
+   - `migrations/20250116_006_fix_admin_rls.sql`
+   - `migrations/20250116_007_fix_is_admin_function.sql`
+   - `migrations/20250116_008_allow_match_creation.sql`
 
 ### Option 2: Using Supabase CLI
 
@@ -62,6 +67,21 @@ Creates PostgreSQL functions for:
 - `can_challenge()` - Validates challenge eligibility
 - `update_player_stats_after_match()` - Updates player statistics
 - Auto-update triggers for `updated_at` timestamps
+
+### 004_fix_users_insert_policy.sql
+Fixes RLS policy to allow user profile creation
+
+### 005_auto_create_user_profile.sql
+Adds trigger to automatically create user profiles on signup
+
+### 006_fix_admin_rls.sql
+Fixes admin RLS policies for proper permission handling
+
+### 007_fix_is_admin_function.sql
+Updates is_admin function and related RLS policies
+
+### 008_allow_match_creation.sql
+Adds RLS policy to allow match creation when challenges are accepted
 
 ## Post-Migration Steps
 
