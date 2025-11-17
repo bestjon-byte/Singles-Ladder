@@ -177,10 +177,10 @@ export function generateChallengeReceivedEmail(props: ChallengeReceivedEmailProp
         <p style="margin-bottom: 0;"><strong>📍 Proposed Location:</strong> ${props.proposedLocation}</p>
       </div>
 
-      <p>You can accept this challenge or propose a different time and location.</p>
+      <p>Accept this challenge in the Matches tab.</p>
 
       <div style="text-align: center; margin-top: 30px;">
-        <a href="${APP_URL}/challenges" class="button">View Challenge</a>
+        <a href="${APP_URL}/matches" class="button">View Challenge</a>
       </div>
 
       <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
@@ -244,7 +244,7 @@ export function generateChallengeRejectedEmail(props: ChallengeRejectedEmailProp
 
       <div style="text-align: center; margin-top: 30px;">
         <a href="${APP_URL}/dashboard" class="button">View Ladder</a>
-        <a href="${APP_URL}/challenges" class="button button-secondary">My Challenges</a>
+        <a href="${APP_URL}/matches" class="button button-secondary">My Matches</a>
       </div>
     </div>
   `

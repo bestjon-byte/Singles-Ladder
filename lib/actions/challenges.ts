@@ -111,6 +111,32 @@ export async function createChallenge(params: CreateChallengeParams) {
       return { error: 'The challenged player already has an active challenge' }
     }
 
+    // Check if challenger has incomplete matches (matches without scores)
+    const { data: challengerIncompleteMatch } = await supabase
+      .from('matches')
+      .select('id')
+      .eq('season_id', activeSeason.id)
+      .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
+      .is('winner_id', null)
+      .single()
+
+    if (challengerIncompleteMatch) {
+      return { error: 'You have a match that needs a score submitted before you can issue another challenge' }
+    }
+
+    // Check if challenged player has incomplete matches
+    const { data: challengedIncompleteMatch } = await supabase
+      .from('matches')
+      .select('id')
+      .eq('season_id', activeSeason.id)
+      .or(`player1_id.eq.${params.challengedId},player2_id.eq.${params.challengedId}`)
+      .is('winner_id', null)
+      .single()
+
+    if (challengedIncompleteMatch) {
+      return { error: 'The challenged player has a match that needs a score submitted' }
+    }
+
     // Create the challenge
     const { data: challenge, error: createError } = await supabase
       .from('challenges')

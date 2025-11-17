@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ChevronUp, ChevronDown } from 'lucide-react'
 import { addPlayerToLadder, removePlayerFromLadder, movePlayerPosition } from '@/lib/actions/ladder-admin'
 
 interface User {
@@ -145,6 +146,52 @@ export default function LadderManagement({
         setSuccess(`${userName} moved to position ${newPos}`)
         setEditingUserId(null)
         setEditPosition('')
+        router.refresh()
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to move player')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleMoveUp = async (userId: string, userName: string, currentPosition: number) => {
+    if (currentPosition === 1) return // Already at top
+
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      const result = await movePlayerPosition(seasonId, userId, currentPosition - 1)
+
+      if (result.error) {
+        setError(result.error)
+      } else {
+        setSuccess(`${userName} moved up to position ${currentPosition - 1}`)
+        router.refresh()
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to move player')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleMoveDown = async (userId: string, userName: string, currentPosition: number) => {
+    if (currentPosition === initialPositions.length) return // Already at bottom
+
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      const result = await movePlayerPosition(seasonId, userId, currentPosition + 1)
+
+      if (result.error) {
+        setError(result.error)
+      } else {
+        setSuccess(`${userName} moved down to position ${currentPosition + 1}`)
         router.refresh()
       }
     } catch (err: any) {
@@ -299,9 +346,9 @@ export default function LadderManagement({
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {pos.user.email}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm space-x-2">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                       {editingUserId === pos.user_id ? (
-                        <>
+                        <div className="flex justify-end gap-2">
                           <button
                             onClick={() => handleSavePosition(pos.user_id, pos.user.name, pos.position)}
                             disabled={loading}
@@ -316,24 +363,40 @@ export default function LadderManagement({
                           >
                             Cancel
                           </button>
-                        </>
+                        </div>
                       ) : (
-                        <>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleMoveUp(pos.user_id, pos.user.name, pos.position)}
+                            disabled={loading || pos.position === 1}
+                            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            title="Move up"
+                          >
+                            <ChevronUp className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleMoveDown(pos.user_id, pos.user.name, pos.position)}
+                            disabled={loading || pos.position === initialPositions.length}
+                            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            title="Move down"
+                          >
+                            <ChevronDown className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => handleEditPosition(pos.user_id, pos.position)}
                             disabled={loading}
-                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 disabled:opacity-50"
+                            className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 disabled:opacity-50 text-sm"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleRemovePlayer(pos.user_id, pos.user.name)}
                             disabled={loading}
-                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50"
+                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50 text-sm"
                           >
                             Remove
                           </button>
-                        </>
+                        </div>
                       )}
                     </td>
                   </tr>

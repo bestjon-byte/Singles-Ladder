@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Navigation from '@/components/Navigation'
 import MatchesList from '@/components/matches/MatchesList'
+import MatchesHeader from '@/components/matches/MatchesHeader'
 import { Award, Trophy, TrendingUp, AlertCircle } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -33,7 +34,7 @@ export default async function MatchesPage() {
   // Get active season
   const { data: activeSeason } = await supabase
     .from('seasons')
-    .select('id, name')
+    .select('id, name, wildcards_per_player')
     .eq('is_active', true)
     .single()
 
@@ -55,6 +56,62 @@ export default async function MatchesPage() {
       </div>
     )
   }
+
+  // Get user's ladder position
+  const { data: ladderEntry } = await supabase
+    .from('ladder_positions')
+    .select('position, season_id')
+    .eq('user_id', user.id)
+    .eq('season_id', activeSeason.id)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  // Get all ladder players
+  const { data: rawLadderPlayers } = await supabase
+    .from('ladder_positions')
+    .select(`
+      id,
+      position,
+      user_id,
+      user:users!ladder_positions_user_id_fkey(id, name, email)
+    `)
+    .eq('season_id', activeSeason.id)
+    .eq('is_active', true)
+    .order('position', { ascending: true })
+
+  const ladderPlayers = rawLadderPlayers?.map((player: any) => ({
+    id: player.id,
+    position: player.position,
+    user_id: player.user_id,
+    user: Array.isArray(player.user) ? player.user[0] : player.user
+  })) || []
+
+  // Get wildcards remaining
+  const { data: wildcardsUsed } = ladderEntry ? await supabase
+    .from('wildcard_usage')
+    .select('id')
+    .eq('season_id', activeSeason.id)
+    .eq('user_id', user.id)
+    : { data: [] }
+
+  const availableWildcards = ladderEntry
+    ? (activeSeason.wildcards_per_player - (wildcardsUsed?.length || 0))
+    : 0
+
+  // Get pending challenges
+  const { data: pendingChallengesData } = await supabase
+    .from('challenges')
+    .select(`
+      *,
+      challenger:users!challenges_challenger_id_fkey(id, name),
+      challenged:users!challenges_challenged_id_fkey(id, name)
+    `)
+    .or(`challenger_id.eq.${user.id},challenged_id.eq.${user.id}`)
+    .in('status', ['pending', 'accepted'])
+
+  const challengesToAccept = pendingChallengesData?.filter(c =>
+    c.challenged_id === user.id && c.status === 'pending'
+  ) || []
 
   // Get all matches for this user
   const { data: matches } = await supabase
@@ -83,15 +140,15 @@ export default async function MatchesPage() {
       <Navigation isAdmin={!!admin} userName={profile?.name} />
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-heading font-bold text-gray-900 dark:text-white mb-2">
-            Match History
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
-            View your match results and track your performance
-          </p>
-        </div>
+        {/* Header with Challenge Player Button */}
+        <MatchesHeader
+          seasonId={activeSeason.id}
+          currentUserId={user.id}
+          currentUserPosition={ladderEntry?.position || null}
+          ladderPlayers={ladderPlayers}
+          availableWildcards={availableWildcards}
+          pendingChallenges={challengesToAccept}
+        />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

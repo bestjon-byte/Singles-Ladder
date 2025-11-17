@@ -106,24 +106,23 @@ export default function InteractiveLadder({
 
   return (
     <>
-      <div className="card p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-heading font-bold text-gray-900 dark:text-white">
+      <div className="card p-4 sm:p-6 md:p-8">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-heading font-bold text-gray-900 dark:text-white">
             Current Ladder
           </h2>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
             {players.length} players
           </div>
         </div>
 
-        <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <p className="text-sm text-blue-800 dark:text-blue-200">
-            <strong>Click a player</strong> to create a challenge. You can challenge players 1-2 positions above you,
-            or use a wildcard ({availableWildcards} remaining) to challenge anyone.
+        <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <p className="text-xs sm:text-sm text-blue-800 dark:text-blue-200">
+            <strong>Click a player</strong> to challenge. Challenge 1-2 above, or use a wildcard ({availableWildcards} left).
           </p>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5 sm:space-y-2">
           {players.map((player) => {
             const status = getPlayerStatus(player)
             const isCurrent = player.user_id === currentUserId
@@ -136,7 +135,7 @@ export default function InteractiveLadder({
                 key={player.id}
                 onClick={() => !isDisabled && !isCurrent && handlePlayerClick(player)}
                 className={`
-                  flex items-center justify-between p-4 rounded-lg border-2 transition-all
+                  flex items-center justify-between p-2.5 sm:p-3 md:p-4 rounded-lg border-2 transition-all
                   ${isCurrent
                     ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-300 dark:border-primary-700'
                     : isChallengeable
@@ -147,9 +146,9 @@ export default function InteractiveLadder({
                   }
                 `}
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 sm:gap-3 md:gap-4 min-w-0 flex-1">
                   <div className={`
-                    w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg
+                    w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-sm sm:text-base md:text-lg flex-shrink-0
                     ${isCurrent
                       ? 'bg-blue-600 dark:bg-blue-500 text-white'
                       : isChallengeable
@@ -162,32 +161,32 @@ export default function InteractiveLadder({
                     #{player.position}
                   </div>
 
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className={`font-semibold ${isCurrent ? 'text-primary-900 dark:text-primary-100' : 'text-gray-900 dark:text-white'}`}>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                      <span className={`font-semibold text-sm sm:text-base truncate ${isCurrent ? 'text-primary-900 dark:text-primary-100' : 'text-gray-900 dark:text-white'}`}>
                         {player.user.name}
                       </span>
                       {isCurrent && (
-                        <span className="badge-primary text-xs">You</span>
+                        <span className="badge-primary text-xs flex-shrink-0">You</span>
                       )}
                       {isChallengeable && !isCurrent && (
-                        <span className="badge-success text-xs">Can Challenge</span>
+                        <span className="badge-success text-xs hidden sm:inline-flex flex-shrink-0">Can Challenge</span>
                       )}
                       {needsWildcard && (
-                        <span className="badge bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs flex items-center gap-1">
+                        <span className="badge bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs flex items-center gap-1 flex-shrink-0">
                           <Zap className="w-3 h-3" />
-                          Wildcard
+                          <span className="hidden sm:inline">Wildcard</span>
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
                       {player.user.email}
                     </p>
                   </div>
                 </div>
 
                 {!isCurrent && !isDisabled && (
-                  <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  <div className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 hidden md:block flex-shrink-0 ml-2">
                     Click to challenge →
                   </div>
                 )}

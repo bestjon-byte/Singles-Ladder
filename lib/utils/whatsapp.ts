@@ -23,8 +23,8 @@ I'd like to challenge you to a match:
 📅 Date: ${formattedDate}
 📍 Location: ${params.proposedLocation}
 
-Accept or propose a new time here:
-${APP_URL}/challenges
+Accept here:
+${APP_URL}/matches
 
 Good luck! 🎾
 - ${params.challengerName}`

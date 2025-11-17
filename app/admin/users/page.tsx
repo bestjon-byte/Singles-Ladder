@@ -1,9 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
+import AdminToggle from '@/components/admin/AdminToggle'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminUsersPage() {
   const supabase = await createClient()
+
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser()
 
   // Get all users with their ladder status
   const { data: users } = await supabase
@@ -68,34 +72,37 @@ export default async function AdminUsersPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Role
                 </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Admin
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Joined
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {users?.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+              {users?.map((userRow) => (
+                <tr key={userRow.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                    {user.name}
+                    {userRow.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {user.email}
+                    {userRow.email}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {user.whatsapp_number || '-'}
+                    {userRow.whatsapp_number || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {ladderPositions[user.id] ? (
+                    {ladderPositions[userRow.id] ? (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                        #{ladderPositions[user.id]}
+                        #{ladderPositions[userRow.id]}
                       </span>
                     ) : (
                       <span className="text-gray-400 dark:text-gray-600">Not in ladder</span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {adminUserIds.has(user.id) ? (
+                    {adminUserIds.has(userRow.id) ? (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
                         Admin
                       </span>
@@ -103,8 +110,18 @@ export default async function AdminUsersPage() {
                       <span className="text-gray-500 dark:text-gray-400">Player</span>
                     )}
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex justify-center">
+                      <AdminToggle
+                        userId={userRow.id}
+                        userName={userRow.name}
+                        isAdmin={adminUserIds.has(userRow.id)}
+                        isCurrentUser={userRow.id === user?.id}
+                      />
+                    </div>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(user.created_at).toLocaleDateString()}
+                    {new Date(userRow.created_at).toLocaleDateString()}
                   </td>
                 </tr>
               ))}

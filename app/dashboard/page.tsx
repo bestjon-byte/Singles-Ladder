@@ -123,20 +123,31 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navigation isAdmin={!!admin} userName={profile?.name} />
 
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* Welcome Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-heading font-bold text-gray-900 dark:text-white mb-2">
-            Welcome back, {profile?.name?.split(' ')[0] || 'Player'}!
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
-            {season ? `${season.name} season is live` : 'No active season'}
-          </p>
+      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {/* Ladder Header with Wildcards Badge */}
+        <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-heading font-bold text-gray-900 dark:text-white mb-1">
+              Ladder
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {season ? season.name : 'No active season'}
+            </p>
+          </div>
+          {ladderEntry && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg border border-purple-200 dark:border-purple-800">
+              <Zap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <div>
+                <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">Wildcards</p>
+                <p className="text-lg font-bold text-purple-700 dark:text-purple-300">{availableWildcards}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Pending Challenges Alert */}
         {challengesToAccept.length > 0 && (
-          <Link href="/challenges" className="block mb-8">
+          <Link href="/matches" className="block mb-6">
             <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg p-6 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] cursor-pointer">
               <div className="flex items-center gap-4">
                 <div className="flex-shrink-0">
@@ -163,90 +174,6 @@ export default async function DashboardPage() {
             </div>
           </Link>
         )}
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Ladder Position */}
-          <div className="card p-6 group hover:border-primary-200 dark:hover:border-primary-800">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-purple-soft flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Trophy className="w-6 h-6 text-primary-600 dark:text-primary-400" />
-              </div>
-              {ladderEntry && (
-                <div className="badge-primary text-lg font-bold">
-                  #{ladderEntry.position}
-                </div>
-              )}
-            </div>
-            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-              Ladder Position
-            </h3>
-            <p className="text-2xl font-heading font-bold text-gray-900 dark:text-white">
-              {ladderEntry ? `#${ladderEntry.position} of ${totalPlayers}` : 'Not on ladder'}
-            </p>
-          </div>
-
-          {/* Win Rate & Match History */}
-          <Link href="/matches" className="card p-6 group hover:border-primary-200 dark:hover:border-primary-800 cursor-pointer transition-all hover:shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
-              </div>
-              <div className="badge-success text-lg font-bold">
-                {winRate}%
-              </div>
-            </div>
-            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-              Win Rate
-            </h3>
-            <p className="text-2xl font-heading font-bold text-gray-900 dark:text-white mb-2">
-              {wins || 0} / {totalMatches || 0} wins
-            </p>
-            <p className="text-xs text-primary-600 dark:text-primary-400 font-medium group-hover:underline">
-              View Match History →
-            </p>
-          </Link>
-
-          {/* Pending Challenges */}
-          <div className="card p-6 group hover:border-primary-200 dark:hover:border-primary-800">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Target className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-              </div>
-              {(pendingChallenges || 0) > 0 && (
-                <div className="badge-warning text-lg font-bold">
-                  {pendingChallenges}
-                </div>
-              )}
-            </div>
-            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-              Pending Challenges
-            </h3>
-            <p className="text-2xl font-heading font-bold text-gray-900 dark:text-white">
-              {pendingChallenges || 0}
-            </p>
-          </div>
-
-          {/* Wildcards */}
-          <div className="card p-6 group hover:border-primary-200 dark:hover:border-primary-800">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Zap className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              </div>
-              {ladderEntry && availableWildcards > 0 && (
-                <div className="badge bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-lg font-bold">
-                  {availableWildcards}
-                </div>
-              )}
-            </div>
-            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-              Wildcards Left
-            </h3>
-            <p className="text-2xl font-heading font-bold text-gray-900 dark:text-white">
-              {availableWildcards}
-            </p>
-          </div>
-        </div>
 
         {/* Interactive Ladder */}
         <InteractiveLadder

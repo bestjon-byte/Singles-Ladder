@@ -210,6 +210,18 @@ export async function movePlayerPosition(
       return { success: true }
     }
 
+    // Step 1: Move the player to a temporary position to avoid constraint violations
+    const { error: tempError } = await supabase
+      .from('ladder_positions')
+      .update({ position: -1 })
+      .eq('id', currentPositionData.id)
+
+    if (tempError) {
+      console.error('Error moving to temp position:', tempError)
+      return { error: 'Failed to move player to temporary position' }
+    }
+
+    // Step 2: Shift other positions
     if (currentPosition < newPosition) {
       // Moving down: shift positions between current and new up by 1
       const { data: positionsToShift } = await supabase
@@ -260,7 +272,7 @@ export async function movePlayerPosition(
       }
     }
 
-    // Update the player's position
+    // Step 3: Update the player's position to final position
     const { error: updateError } = await supabase
       .from('ladder_positions')
       .update({ position: newPosition })

@@ -10,7 +10,7 @@ interface Season {
   start_date: string
   end_date: string | null
   is_active: boolean
-  wildcards_allowed: number
+  wildcards_per_player: number
   created_at: string
 }
 
@@ -245,7 +245,7 @@ export default function SeasonsManagement({ initialSeasons }: SeasonsManagementP
                         Start: {new Date(season.start_date).toLocaleDateString()}
                         {season.end_date && ` • End: ${new Date(season.end_date).toLocaleDateString()}`}
                       </p>
-                      <p>Wildcards: {season.wildcards_allowed} per player</p>
+                      <p>Wildcards: {season.wildcards_per_player} per player</p>
                     </div>
                   </div>
 
