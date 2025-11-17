@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { submitMatchScore } from '@/lib/actions/matches'
+import { ChevronDown, ChevronUp, MapPin, Calendar, Trophy, Star } from 'lucide-react'
 
 interface Match {
   id: string
@@ -45,6 +46,7 @@ interface MatchCardProps {
 
 export default function MatchCard({ match, currentUserId }: MatchCardProps) {
   const router = useRouter()
+  const [expanded, setExpanded] = useState(false)
   const [showScoreForm, setShowScoreForm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -85,98 +87,179 @@ export default function MatchCard({ match, currentUserId }: MatchCardProps) {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-GB', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
+    return new Date(dateString).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
     })
   }
 
   const isPlayer1 = match.player1.id === currentUserId
+  const isCompleted = !!match.winner_id
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <div className="flex items-center space-x-2 mb-2">
-            <h4 className="text-lg font-medium text-gray-900 dark:text-white">
-              {match.player1.name} vs {match.player2.name}
-            </h4>
-            {match.challenge?.is_wildcard && (
-              <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400 rounded-full">
-                Wildcard
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all hover:shadow-md">
+      {/* Collapsed View */}
+      <div
+        className="p-4 cursor-pointer select-none"
+        onClick={() => !showScoreForm && setExpanded(!expanded)}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-1">
+              <h4 className="text-base font-semibold text-gray-900 dark:text-white truncate">
+                {match.player1.name} vs {match.player2.name}
+              </h4>
+              {match.challenge?.is_wildcard && (
+                <Star className="w-4 h-4 text-purple-500 flex-shrink-0" />
+              )}
+            </div>
+
+            {/* Compact Score Display for Completed Matches */}
+            {isCompleted ? (
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 text-sm">
+                  <Trophy className="w-4 h-4 text-yellow-500" />
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {match.winner?.name}
+                  </span>
+                </div>
+                <div className="flex gap-1 text-sm font-mono">
+                  <span className={match.winner_id === match.player1.id ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400'}>
+                    {match.set1_player1_score}
+                  </span>
+                  <span className="text-gray-400">-</span>
+                  <span className={match.winner_id === match.player2.id ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400'}>
+                    {match.set1_player2_score}
+                  </span>
+                  <span className="text-gray-300 dark:text-gray-600 mx-1">•</span>
+                  <span className={match.winner_id === match.player1.id ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400'}>
+                    {match.set2_player1_score}
+                  </span>
+                  <span className="text-gray-400">-</span>
+                  <span className={match.winner_id === match.player2.id ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400'}>
+                    {match.set2_player2_score}
+                  </span>
+                  {match.set3_player1_score !== null && (
+                    <>
+                      <span className="text-gray-300 dark:text-gray-600 mx-1">•</span>
+                      <span className={match.winner_id === match.player1.id ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400'}>
+                        {match.set3_player1_score}
+                      </span>
+                      <span className="text-gray-400">-</span>
+                      <span className={match.winner_id === match.player2.id ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400'}>
+                        {match.set3_player2_score}
+                      </span>
+                      {match.final_set_type === 'tiebreak' && (
+                        <span className="text-purple-500 text-xs">*</span>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400 rounded">
+                Awaiting Score
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {formatDate(match.match_date)} • {match.location}
-          </p>
+
+          <div className="flex items-center gap-2 ml-4">
+            {!showScoreForm && (
+              expanded ?
+                <ChevronUp className="w-5 h-5 text-gray-400" /> :
+                <ChevronDown className="w-5 h-5 text-gray-400" />
+            )}
+          </div>
         </div>
-        {match.winner_id ? (
-          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 rounded-full">
-            Completed
-          </span>
-        ) : (
-          <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400 rounded-full">
-            Pending
-          </span>
-        )}
       </div>
 
-      {/* Score Display or Entry */}
-      {match.winner_id ? (
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className={`text-sm font-medium ${match.winner_id === match.player1.id ? 'text-green-600 dark:text-green-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                {match.player1.name}
-              </span>
-              <div className="flex space-x-4 text-sm">
-                <span className="font-medium">{match.set1_player1_score}</span>
-                <span className="font-medium">{match.set2_player1_score}</span>
-                {match.set3_player1_score !== null && (
-                  <span className="font-medium">
-                    {match.set3_player1_score}
-                    {match.final_set_type === 'tiebreak' && '*'}
-                  </span>
-                )}
-              </div>
+      {/* Expanded Details */}
+      {expanded && !showScoreForm && (
+        <div className="px-4 pb-4 border-t border-gray-100 dark:border-gray-700 pt-4 space-y-4">
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <Calendar className="w-4 h-4" />
+              <span>{formatDate(match.match_date)}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className={`text-sm font-medium ${match.winner_id === match.player2.id ? 'text-green-600 dark:text-green-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                {match.player2.name}
-              </span>
-              <div className="flex space-x-4 text-sm">
-                <span className="font-medium">{match.set1_player2_score}</span>
-                <span className="font-medium">{match.set2_player2_score}</span>
-                {match.set3_player2_score !== null && (
-                  <span className="font-medium">
-                    {match.set3_player2_score}
-                    {match.final_set_type === 'tiebreak' && '*'}
-                  </span>
-                )}
-              </div>
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <MapPin className="w-4 h-4" />
+              <span>{match.location}</span>
             </div>
           </div>
-          <p className="mt-4 text-sm text-green-600 dark:text-green-400">
-            Winner: {match.winner?.name}
-          </p>
-          {match.final_set_type === 'tiebreak' && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              * Final set was a championship tiebreak
-            </p>
-          )}
-        </div>
-      ) : (
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-          {!showScoreForm ? (
+
+          {isCompleted ? (
+            <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+              <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-3">Match Details</h5>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${match.winner_id === match.player1.id ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+                    <span className={`font-medium ${match.winner_id === match.player1.id ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
+                      {match.player1.name}
+                    </span>
+                  </div>
+                  <div className="flex gap-3 font-mono text-base">
+                    <span className={`w-8 text-center ${match.winner_id === match.player1.id ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400'}`}>
+                      {match.set1_player1_score}
+                    </span>
+                    <span className={`w-8 text-center ${match.winner_id === match.player1.id ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400'}`}>
+                      {match.set2_player1_score}
+                    </span>
+                    {match.set3_player1_score !== null && (
+                      <span className={`w-8 text-center ${match.winner_id === match.player1.id ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400'}`}>
+                        {match.set3_player1_score}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${match.winner_id === match.player2.id ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+                    <span className={`font-medium ${match.winner_id === match.player2.id ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
+                      {match.player2.name}
+                    </span>
+                  </div>
+                  <div className="flex gap-3 font-mono text-base">
+                    <span className={`w-8 text-center ${match.winner_id === match.player2.id ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400'}`}>
+                      {match.set1_player2_score}
+                    </span>
+                    <span className={`w-8 text-center ${match.winner_id === match.player2.id ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400'}`}>
+                      {match.set2_player2_score}
+                    </span>
+                    {match.set3_player2_score !== null && (
+                      <span className={`w-8 text-center ${match.winner_id === match.player2.id ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400'}`}>
+                        {match.set3_player2_score}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {match.final_set_type === 'tiebreak' && (
+                <p className="text-xs text-purple-600 dark:text-purple-400 mt-3 flex items-center gap-1">
+                  <Star className="w-3 h-3" />
+                  Final set was a championship tiebreak
+                </p>
+              )}
+            </div>
+          ) : (
             <button
-              onClick={() => setShowScoreForm(true)}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowScoreForm(true)
+              }}
+              className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium transition-colors"
             >
               Enter Match Score
             </button>
-          ) : (
-            <form onSubmit={handleSubmitScore} className="space-y-4">
+          )}
+        </div>
+      )}
+
+      {/* Score Entry Form */}
+      {showScoreForm && (
+        <div className="px-4 pb-4 border-t border-gray-100 dark:border-gray-700 pt-4">
+          <form onSubmit={handleSubmitScore} className="space-y-4">
               {/* Set 1 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -349,7 +432,6 @@ export default function MatchCard({ match, currentUserId }: MatchCardProps) {
                 </button>
               </div>
             </form>
-          )}
         </div>
       )}
     </div>

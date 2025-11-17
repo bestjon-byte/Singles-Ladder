@@ -7,27 +7,6 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-br from-white via-primary-50/30 to-white dark:from-gray-900 dark:via-primary-900/10 dark:to-gray-900">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        {/* Decorative tennis ball */}
-        <div className="absolute top-20 right-10 w-32 h-32 opacity-20 animate-bounce-subtle hidden lg:block">
-          <Image
-            src="/images/apple-touch-icon.png"
-            alt="Tennis Ball"
-            width={128}
-            height={128}
-            className="object-contain"
-          />
-        </div>
-
-        <div className="absolute top-60 left-10 w-24 h-24 opacity-10 animate-bounce-subtle hidden lg:block" style={{ animationDelay: '1s' }}>
-          <Image
-            src="/images/apple-touch-icon.png"
-            alt="Tennis Ball"
-            width={96}
-            height={96}
-            className="object-contain"
-          />
-        </div>
-
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24 text-center">
           {/* Logo */}
           <div className="flex justify-center mb-8 animate-fade-in">
