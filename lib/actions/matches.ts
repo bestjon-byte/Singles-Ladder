@@ -172,7 +172,15 @@ export async function submitMatchScore(params: SubmitScoreParams) {
     }
 
     // TODO: Update player stats (Phase 6)
-    // TODO: Create notifications (Phase 4)
+
+    // Send notifications to both players
+    try {
+      const { notifyMatchScoreSubmitted } = await import('@/lib/services/notifications')
+      await notifyMatchScoreSubmitted(params.matchId)
+    } catch (notifError) {
+      console.error('Failed to send match score notifications:', notifError)
+      // Don't fail the operation if notification fails
+    }
 
     // Aggressively clear all relevant caches
     revalidatePath('/matches')

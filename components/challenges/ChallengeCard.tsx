@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { acceptChallenge, withdrawChallenge, rejectChallenge } from '@/lib/actions/challenges'
+import { WhatsAppShareDialog } from './WhatsAppShareDialog'
 
 interface Challenge {
   id: string
@@ -160,6 +161,19 @@ export default function ChallengeCard({ challenge, currentUserId }: ChallengeCar
             <p className="text-sm text-green-700 dark:text-green-300">
               Location: {challenge.accepted_location}
             </p>
+          </div>
+        )}
+
+        {/* WhatsApp Share Button (for both pending and accepted challenges) */}
+        {(challenge.status === 'pending' || challenge.status === 'accepted') && (
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <WhatsAppShareDialog
+              challengerName={challenge.challenger.name}
+              challengedName={challenge.challenged.name}
+              proposedDate={challenge.proposed_date}
+              proposedLocation={challenge.proposed_location}
+              isWildcard={challenge.is_wildcard}
+            />
           </div>
         )}
       </div>
