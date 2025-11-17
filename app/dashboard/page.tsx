@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Navigation from '@/components/Navigation'
+import InteractiveLadder from '@/components/ladder/InteractiveLadder'
 import { Trophy, Target, Award, TrendingUp, Medal, Zap } from 'lucide-react'
 
 export default async function DashboardPage() {
@@ -63,6 +64,20 @@ export default async function DashboardPage() {
   const availableWildcards = season && ladderEntry
     ? (season.wildcards_per_player - (wildcardsUsed?.length || 0))
     : 0
+
+  // Get all ladder players for the interactive ladder
+  const { data: ladderPlayers } = season ? await supabase
+    .from('ladder_positions')
+    .select(`
+      id,
+      position,
+      user_id,
+      user:users!ladder_positions_user_id_fkey(id, name, email)
+    `)
+    .eq('season_id', season.id)
+    .eq('is_active', true)
+    .order('position', { ascending: true })
+    : { data: [] }
 
   // Get user's match stats
   const { count: wins } = await supabase
@@ -231,79 +246,14 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        {/* Status Section */}
-        <div className="card p-8">
-          {ladderEntry ? (
-            <>
-              <h2 className="text-2xl font-heading font-bold text-gray-900 dark:text-white mb-4">
-                You&apos;re on the Ladder!
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                    <Trophy className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      Current position: #{ladderEntry.position}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {ladderEntry.position === 1
-                        ? "You're at the top! Defend your position!"
-                        : `Challenge players above you to climb the ladder`}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                    <Zap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      Wildcards: {availableWildcards}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Use wildcards to challenge players further up the ladder
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <h2 className="text-2xl font-heading font-bold text-gray-900 dark:text-white mb-4">
-                Get Started
-              </h2>
-              <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-6">
-                <div className="flex items-start gap-4">
-                  <Trophy className="w-8 h-8 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-1" />
-                  <div>
-                    <h3 className="font-semibold text-primary-900 dark:text-primary-100 mb-2">
-                      Join the Ladder
-                    </h3>
-                    <p className="text-primary-800 dark:text-primary-200 mb-4">
-                      You&apos;re not currently on the ladder. Contact an admin to be added and start competing!
-                    </p>
-                    <ul className="space-y-2 text-sm text-primary-700 dark:text-primary-300">
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary-600 dark:bg-primary-400" />
-                        Wait for an admin to add you to the ladder
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary-600 dark:bg-primary-400" />
-                        Once added, you can challenge other players
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary-600 dark:bg-primary-400" />
-                        Win matches to climb the rankings
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+        {/* Interactive Ladder */}
+        <InteractiveLadder
+          players={ladderPlayers || []}
+          currentUserId={user.id}
+          currentUserPosition={ladderEntry?.position || null}
+          seasonId={season?.id || ''}
+          availableWildcards={availableWildcards}
+        />
       </div>
     </div>
   )
