@@ -5,6 +5,9 @@ import Navigation from '@/components/Navigation'
 import InteractiveLadder from '@/components/ladder/InteractiveLadder'
 import { Trophy, Target, Award, TrendingUp, Medal, Zap } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function DashboardPage() {
   const supabase = await createClient()
 

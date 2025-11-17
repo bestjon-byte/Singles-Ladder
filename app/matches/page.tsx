@@ -4,6 +4,9 @@ import Navigation from '@/components/Navigation'
 import MatchesList from '@/components/matches/MatchesList'
 import { Award, Trophy, TrendingUp, AlertCircle } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function MatchesPage() {
   const supabase = await createClient()
 
