@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
+import Navigation from '@/components/Navigation'
 import ChallengesList from '@/components/challenges/ChallengesList'
 import CreateChallengeButton from '@/components/challenges/CreateChallengeButton'
+import { Target, Trophy, Zap, AlertCircle } from 'lucide-react'
 
 export default async function ChallengesPage() {
   const supabase = await createClient()
@@ -20,6 +21,13 @@ export default async function ChallengesPage() {
     .eq('id', user.id)
     .single()
 
+  // Check if user is admin
+  const { data: admin } = await supabase
+    .from('admins')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
   // Get active season
   const { data: activeSeason } = await supabase
     .from('seasons')
@@ -30,29 +38,15 @@ export default async function ChallengesPage() {
   if (!activeSeason) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
-              <div className="flex items-center">
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Challenges
-                </h1>
-              </div>
-              <div className="flex items-center">
-                <Link
-                  href="/dashboard"
-                  className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                >
-                  Back to Dashboard
-                </Link>
-              </div>
-            </div>
-          </div>
-        </nav>
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <Navigation isAdmin={!!admin} userName={profile?.name} />
+        <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+          <div className="card p-12 text-center">
+            <AlertCircle className="w-16 h-16 text-amber-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-heading font-bold text-gray-900 dark:text-white mb-2">
+              No Active Season
+            </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              No active season. Challenges will be available once a season starts.
+              Challenges will be available once a season starts. Contact an admin for more information.
             </p>
           </div>
         </main>
@@ -90,97 +84,102 @@ export default async function ChallengesPage() {
 
   const wildcardsRemaining = activeSeason.wildcards_per_player - (wildcardsUsed?.length || 0)
 
-  // Check if user has admin access
-  const { data: admin } = await supabase
-    .from('admins')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Navigation */}
-      <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Challenges
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/dashboard"
-                className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              >
-                Ladder
-              </Link>
-              <Link
-                href="/matches"
-                className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              >
-                Matches
-              </Link>
-              <Link
-                href="/profile"
-                className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              >
-                Profile
-              </Link>
-              {admin && (
-                <Link
-                  href="/admin"
-                  className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                >
-                  Admin
-                </Link>
-              )}
-            </div>
-          </div>
+      <Navigation isAdmin={!!admin} userName={profile?.name} />
+
+      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-heading font-bold text-gray-900 dark:text-white mb-2">
+            Challenges
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400">
+            {ladderPosition ? 'Manage your active challenges and create new ones' : 'Join the ladder to start challenging players'}
+          </p>
         </div>
-      </nav>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 sm:px-0">
-          {/* Header with Create Challenge Button */}
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                My Challenges
-              </h2>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {ladderPosition ? (
-                  <>
-                    Your position: #{ladderPosition.position} • Wildcards remaining: {wildcardsRemaining}/{activeSeason.wildcards_per_player}
-                  </>
-                ) : (
-                  'You must be on the ladder to create challenges'
-                )}
+        {/* Stats Cards */}
+        {ladderPosition && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-purple-soft flex items-center justify-center">
+                  <Trophy className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                </div>
+                <div className="badge-primary text-lg font-bold">
+                  #{ladderPosition.position}
+                </div>
+              </div>
+              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Your Position
+              </h3>
+              <p className="text-xl font-heading font-bold text-gray-900 dark:text-white">
+                Rank #{ladderPosition.position}
               </p>
             </div>
-            {ladderPosition && (
-              <CreateChallengeButton
-                seasonId={activeSeason.id}
-                userPosition={ladderPosition.position}
-                wildcardsRemaining={wildcardsRemaining}
-              />
-            )}
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                  <Zap className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div className="badge bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-lg font-bold">
+                  {wildcardsRemaining}
+                </div>
+              </div>
+              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Wildcards Available
+              </h3>
+              <p className="text-xl font-heading font-bold text-gray-900 dark:text-white">
+                {wildcardsRemaining} / {activeSeason.wildcards_per_player}
+              </p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                  <Target className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                </div>
+              </div>
+              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Current Season
+              </h3>
+              <p className="text-xl font-heading font-bold text-gray-900 dark:text-white truncate">
+                {activeSeason.name}
+              </p>
+            </div>
           </div>
+        )}
 
-          {/* Challenges List */}
-          {!ladderPosition ? (
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-              <p className="text-gray-600 dark:text-gray-400">
-                You must be added to the ladder by an admin before you can create or receive challenges.
-              </p>
-            </div>
-          ) : (
-            <ChallengesList
-              challenges={challenges || []}
-              currentUserId={user.id}
+        {/* Create Challenge Button */}
+        {ladderPosition && (
+          <div className="mb-6">
+            <CreateChallengeButton
+              seasonId={activeSeason.id}
+              userPosition={ladderPosition.position}
+              wildcardsRemaining={wildcardsRemaining}
             />
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Challenges List */}
+        {!ladderPosition ? (
+          <div className="card p-12 text-center">
+            <Trophy className="w-16 h-16 text-primary-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-heading font-bold text-gray-900 dark:text-white mb-3">
+              Join the Ladder First
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+              You must be added to the ladder by an admin before you can create or receive challenges.
+            </p>
+          </div>
+        ) : (
+          <ChallengesList
+            challenges={challenges || []}
+            currentUserId={user.id}
+          />
+        )}
       </main>
     </div>
   )

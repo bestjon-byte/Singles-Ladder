@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
+import Navigation from '@/components/Navigation'
 import MatchesList from '@/components/matches/MatchesList'
+import { Award, Trophy, TrendingUp, AlertCircle } from 'lucide-react'
 
 export default async function MatchesPage() {
   const supabase = await createClient()
@@ -11,6 +12,20 @@ export default async function MatchesPage() {
   if (error || !user) {
     redirect('/auth/login')
   }
+
+  // Get user profile
+  const { data: profile } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', user.id)
+    .single()
+
+  // Check if user is admin
+  const { data: admin } = await supabase
+    .from('admins')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
 
   // Get active season
   const { data: activeSeason } = await supabase
@@ -22,29 +37,15 @@ export default async function MatchesPage() {
   if (!activeSeason) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
-              <div className="flex items-center">
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Matches
-                </h1>
-              </div>
-              <div className="flex items-center">
-                <Link
-                  href="/dashboard"
-                  className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                >
-                  Back to Dashboard
-                </Link>
-              </div>
-            </div>
-          </div>
-        </nav>
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <Navigation isAdmin={!!admin} userName={profile?.name} />
+        <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+          <div className="card p-12 text-center">
+            <AlertCircle className="w-16 h-16 text-amber-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-heading font-bold text-gray-900 dark:text-white mb-2">
+              No Active Season
+            </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              No active season. Matches will be available once a season starts.
+              Matches will be available once a season starts.
             </p>
           </div>
         </main>
@@ -66,72 +67,100 @@ export default async function MatchesPage() {
     .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
     .order('match_date', { ascending: false })
 
-  // Check if user has admin access
-  const { data: admin } = await supabase
-    .from('admins')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle()
+  // Calculate stats
+  const totalMatches = matches?.length || 0
+  const wins = matches?.filter(m => m.winner_id === user.id).length || 0
+  const losses = totalMatches - wins
+  const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Navigation */}
-      <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Matches
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/dashboard"
-                className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              >
-                Ladder
-              </Link>
-              <Link
-                href="/challenges"
-                className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              >
-                Challenges
-              </Link>
-              <Link
-                href="/profile"
-                className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              >
-                Profile
-              </Link>
-              {admin && (
-                <Link
-                  href="/admin"
-                  className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                >
-                  Admin
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation isAdmin={!!admin} userName={profile?.name} />
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 sm:px-0">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              My Matches
-            </h2>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {activeSeason.name}
+      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-heading font-bold text-gray-900 dark:text-white mb-2">
+            Match History
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400">
+            View your match results and track your performance
+          </p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <Award className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Total Matches
+            </h3>
+            <p className="text-2xl font-heading font-bold text-gray-900 dark:text-white">
+              {totalMatches}
             </p>
           </div>
 
-          <MatchesList
-            matches={matches || []}
-            currentUserId={user.id}
-          />
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <Trophy className="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="badge-success text-lg font-bold">
+                {wins}
+              </div>
+            </div>
+            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Wins
+            </h3>
+            <p className="text-2xl font-heading font-bold text-gray-900 dark:text-white">
+              {wins} matches
+            </p>
+          </div>
+
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+              <div className="badge-danger text-lg font-bold">
+                {losses}
+              </div>
+            </div>
+            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Losses
+            </h3>
+            <p className="text-2xl font-heading font-bold text-gray-900 dark:text-white">
+              {losses} matches
+            </p>
+          </div>
+
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-purple-soft flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+              </div>
+              <div className="badge-primary text-lg font-bold">
+                {winRate}%
+              </div>
+            </div>
+            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Win Rate
+            </h3>
+            <p className="text-2xl font-heading font-bold text-gray-900 dark:text-white">
+              {winRate}%
+            </p>
+          </div>
         </div>
+
+        {/* Matches List */}
+        <MatchesList
+          matches={matches || []}
+          currentUserId={user.id}
+        />
       </main>
     </div>
   )
