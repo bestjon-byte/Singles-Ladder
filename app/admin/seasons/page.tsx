@@ -14,7 +14,7 @@ export default async function AdminSeasonsPage() {
 
   return (
     <div className="px-4 sm:px-0">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+      <h1 className="text-3xl font-heading font-bold text-gray-900 dark:text-white mb-8">
         Manage Seasons
       </h1>
 
