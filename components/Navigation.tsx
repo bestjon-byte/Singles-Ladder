@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Menu, X, Trophy, Target, Award, User, Settings } from 'lucide-react'
 import { useState } from 'react'
+import { NotificationBell } from './notifications/NotificationBell'
 
 interface NavigationProps {
   isAdmin?: boolean
@@ -75,6 +76,11 @@ export default function Navigation({ isAdmin = false, userName }: NavigationProp
               )
             })}
 
+            {/* Notification Bell */}
+            <div className="ml-2">
+              <NotificationBell />
+            </div>
+
             {/* Sign out button */}
             <form action="/auth/signout" method="post" className="ml-2">
               <button
@@ -86,8 +92,9 @@ export default function Navigation({ isAdmin = false, userName }: NavigationProp
             </form>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          {/* Mobile menu button and notification bell */}
+          <div className="md:hidden flex items-center gap-2">
+            <NotificationBell />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"

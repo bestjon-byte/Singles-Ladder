@@ -147,7 +147,14 @@ export async function createChallenge(params: CreateChallengeParams) {
       }
     }
 
-    // TODO: Create notification for challenged player (Phase 4)
+    // Send notification to challenged player
+    try {
+      const { notifyChallengeReceived } = await import('@/lib/services/notifications')
+      await notifyChallengeReceived(challenge.id)
+    } catch (notifError) {
+      console.error('Failed to send challenge notification:', notifError)
+      // Don't fail the operation if notification fails
+    }
 
     revalidatePath('/challenges')
     revalidatePath('/dashboard')
@@ -224,7 +231,14 @@ export async function acceptChallenge(challengeId: string) {
       // Don't fail the whole operation if match creation fails
     }
 
-    // TODO: Create notification for challenger (Phase 4)
+    // Send notification to challenger
+    try {
+      const { notifyChallengeAccepted } = await import('@/lib/services/notifications')
+      await notifyChallengeAccepted(challengeId)
+    } catch (notifError) {
+      console.error('Failed to send acceptance notification:', notifError)
+      // Don't fail the operation if notification fails
+    }
 
     revalidatePath('/challenges')
     revalidatePath('/matches')
@@ -282,7 +296,14 @@ export async function rejectChallenge(challengeId: string) {
       return { error: 'Failed to reject challenge' }
     }
 
-    // TODO: Create notification for challenger (Phase 4)
+    // Send notification to challenger
+    try {
+      const { notifyChallengeRejected } = await import('@/lib/services/notifications')
+      await notifyChallengeRejected(challengeId)
+    } catch (notifError) {
+      console.error('Failed to send rejection notification:', notifError)
+      // Don't fail the operation if notification fails
+    }
 
     revalidatePath('/challenges')
     revalidatePath('/dashboard')
@@ -339,7 +360,14 @@ export async function withdrawChallenge(challengeId: string) {
       return { error: 'Failed to withdraw challenge' }
     }
 
-    // TODO: Create notification for challenged player (Phase 4)
+    // Send notification to challenged player
+    try {
+      const { notifyChallengeWithdrawn } = await import('@/lib/services/notifications')
+      await notifyChallengeWithdrawn(challengeId)
+    } catch (notifError) {
+      console.error('Failed to send withdrawal notification:', notifError)
+      // Don't fail the operation if notification fails
+    }
 
     revalidatePath('/challenges')
     revalidatePath('/dashboard')
