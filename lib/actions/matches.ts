@@ -127,11 +127,24 @@ export async function submitMatchScore(params: SubmitScoreParams) {
     console.log('Is challenge match?', match.match_type === 'challenge')
     console.log('Has challenge_id?', !!match.challenge_id)
 
+    let ladderUpdateStatus = 'not_applicable'
+    let ladderUpdateDetails: any = {}
+
     if (match.match_type === 'challenge' && match.challenge_id) {
       const challenge = match.challenge as any
       console.log('Challenge data:', challenge)
       console.log('Challenger ID from challenge:', challenge?.challenger_id)
       console.log('Did challenger win?', winnerId === challenge?.challenger_id)
+
+      ladderUpdateDetails = {
+        matchType: match.match_type,
+        hasChallengeId: !!match.challenge_id,
+        hasChallenge: !!challenge,
+        challengerId: challenge?.challenger_id,
+        challengedId: challenge?.challenged_id,
+        winnerId,
+        challengerWon: winnerId === challenge?.challenger_id
+      }
 
       // If challenger won, they move up
       if (challenge && winnerId === challenge.challenger_id) {
@@ -139,15 +152,23 @@ export async function submitMatchScore(params: SubmitScoreParams) {
           console.log('Starting ladder update...')
           await updateLadderPositions(match.season_id, challenge.challenger_id, challenge.challenged_id)
           console.log(`Ladder positions updated: challenger ${challenge.challenger_id} moved up`)
+          ladderUpdateStatus = 'updated'
         } catch (error) {
           console.error('Error updating ladder positions:', error)
-          // Don't fail the match submission, but log the error
+          ladderUpdateStatus = 'error'
+          ladderUpdateDetails.error = error instanceof Error ? error.message : 'Unknown error'
         }
       } else {
         console.log('Challenger lost - no ladder update needed')
+        ladderUpdateStatus = 'challenger_lost'
       }
     } else {
       console.log('Not a challenge match - skipping ladder update')
+      ladderUpdateDetails = {
+        matchType: match.match_type,
+        hasChallengeId: !!match.challenge_id,
+        hasChallenge: !!match.challenge
+      }
     }
 
     // TODO: Update player stats (Phase 6)
@@ -158,7 +179,13 @@ export async function submitMatchScore(params: SubmitScoreParams) {
     revalidatePath('/dashboard')
     revalidatePath('/admin/ladder')
 
-    return { success: true }
+    return {
+      success: true,
+      debug: {
+        ladderUpdateStatus,
+        ladderUpdateDetails
+      }
+    }
   } catch (error) {
     console.error('Error in submitMatchScore:', error)
     return { error: 'An unexpected error occurred' }

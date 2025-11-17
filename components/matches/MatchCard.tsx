@@ -76,6 +76,15 @@ export default function MatchCard({ match, currentUserId }: MatchCardProps) {
       finalSetType: needsSet3 && finalSetType ? finalSetType : null,
     })
 
+    // Log debug info to browser console
+    console.log('=== LADDER UPDATE DEBUG (Browser) ===')
+    console.log('Full result:', result)
+    if ('debug' in result) {
+      console.log('Ladder update status:', result.debug.ladderUpdateStatus)
+      console.log('Ladder update details:', result.debug.ladderUpdateDetails)
+    }
+    console.log('=====================================')
+
     setLoading(false)
 
     if (result.error) {
