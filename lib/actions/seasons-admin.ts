@@ -37,7 +37,7 @@ export async function createSeason(data: CreateSeasonData) {
         name: data.name,
         start_date: data.startDate,
         end_date: data.endDate,
-        wildcards_allowed: data.wildcardsAllowed,
+        wildcards_per_player: data.wildcardsAllowed,
         is_active: false, // Don't auto-activate
       })
 
