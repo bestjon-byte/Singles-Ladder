@@ -79,6 +79,14 @@ export async function submitMatchScore(params: SubmitScoreParams) {
     const winnerId = winnerSide === 'player1' ? match.player1_id : match.player2_id
     const loserId = winnerSide === 'player1' ? match.player2_id : match.player1_id
 
+    console.log('=== MATCH SCORE SUBMISSION DEBUG ===')
+    console.log('Match type:', match.match_type)
+    console.log('Challenge ID:', match.challenge_id)
+    console.log('Winner ID:', winnerId)
+    console.log('Loser ID:', loserId)
+    console.log('Has challenge object:', !!match.challenge)
+    console.log('Challenge object:', match.challenge)
+
     // Update match with score
     const { error: updateError } = await supabase
       .from('matches')
@@ -115,31 +123,77 @@ export async function submitMatchScore(params: SubmitScoreParams) {
     }
 
     // Update ladder positions if this was a challenge match
+    console.log('Checking ladder update conditions...')
+    console.log('Is challenge match?', match.match_type === 'challenge')
+    console.log('Has challenge_id?', !!match.challenge_id)
+
+    let ladderUpdateStatus = 'not_applicable'
+    let ladderUpdateDetails: any = {}
+
     if (match.match_type === 'challenge' && match.challenge_id) {
       const challenge = match.challenge as any
+      console.log('Challenge data:', challenge)
+      console.log('Challenger ID from challenge:', challenge?.challenger_id)
+      console.log('Did challenger win?', winnerId === challenge?.challenger_id)
+
+      ladderUpdateDetails = {
+        matchType: match.match_type,
+        hasChallengeId: !!match.challenge_id,
+        hasChallenge: !!challenge,
+        challengerId: challenge?.challenger_id,
+        challengedId: challenge?.challenged_id,
+        winnerId,
+        challengerWon: winnerId === challenge?.challenger_id
+      }
 
       // If challenger won, they move up
-      if (winnerId === challenge.challenger_id) {
+      if (challenge && winnerId === challenge.challenger_id) {
         try {
+          console.log('Starting ladder update...')
           await updateLadderPositions(match.season_id, challenge.challenger_id, challenge.challenged_id)
           console.log(`Ladder positions updated: challenger ${challenge.challenger_id} moved up`)
+          ladderUpdateStatus = 'updated'
         } catch (error) {
           console.error('Error updating ladder positions:', error)
-          // Don't fail the match submission, but log the error
+          ladderUpdateStatus = 'error'
+          ladderUpdateDetails.error = error instanceof Error ? error.message : 'Unknown error'
         }
+      } else {
+        console.log('Challenger lost - no ladder update needed')
+        ladderUpdateStatus = 'challenger_lost'
       }
-      // If challenger lost, no position change
+    } else {
+      console.log('Not a challenge match - skipping ladder update')
+      ladderUpdateDetails = {
+        matchType: match.match_type,
+        hasChallengeId: !!match.challenge_id,
+        hasChallenge: !!match.challenge
+      }
     }
 
     // TODO: Update player stats (Phase 6)
     // TODO: Create notifications (Phase 4)
 
+    // Aggressively clear all relevant caches
     revalidatePath('/matches')
+    revalidatePath('/matches', 'page')
     revalidatePath('/challenges')
+    revalidatePath('/challenges', 'page')
     revalidatePath('/dashboard')
+    revalidatePath('/dashboard', 'page')
     revalidatePath('/admin/ladder')
+    revalidatePath('/admin/ladder', 'page')
+    revalidatePath('/', 'layout') // Clear all cached data
 
-    return { success: true }
+    console.log('All paths revalidated')
+
+    return {
+      success: true,
+      debug: {
+        ladderUpdateStatus,
+        ladderUpdateDetails
+      }
+    }
   } catch (error) {
     console.error('Error in submitMatchScore:', error)
     return { error: 'An unexpected error occurred' }
