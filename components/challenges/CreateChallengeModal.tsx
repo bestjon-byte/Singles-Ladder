@@ -21,6 +21,8 @@ interface CreateChallengeModalProps {
   userPosition: number
   wildcardsRemaining: number
   onClose: () => void
+  preselectedPlayerId?: string
+  preselectedIsWildcard?: boolean
 }
 
 export default function CreateChallengeModal({
@@ -28,11 +30,13 @@ export default function CreateChallengeModal({
   userPosition,
   wildcardsRemaining,
   onClose,
+  preselectedPlayerId,
+  preselectedIsWildcard = false,
 }: CreateChallengeModalProps) {
   const router = useRouter()
   const [players, setPlayers] = useState<Player[]>([])
-  const [selectedPlayerId, setSelectedPlayerId] = useState('')
-  const [isWildcard, setIsWildcard] = useState(false)
+  const [selectedPlayerId, setSelectedPlayerId] = useState(preselectedPlayerId || '')
+  const [isWildcard, setIsWildcard] = useState(preselectedIsWildcard)
   const [proposedDate, setProposedDate] = useState('')
   const [proposedLocation, setProposedLocation] = useState('')
   const [loading, setLoading] = useState(false)

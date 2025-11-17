@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Navigation from '@/components/Navigation'
+import InteractiveLadder from '@/components/ladder/InteractiveLadder'
 import { Trophy, Target, Award, TrendingUp, Medal, Zap } from 'lucide-react'
 
 export default async function DashboardPage() {
@@ -30,23 +31,61 @@ export default async function DashboardPage() {
   // Get active season
   const { data: season } = await supabase
     .from('seasons')
-    .select('id, name')
+    .select('id, name, wildcards_per_player')
     .eq('is_active', true)
     .maybeSingle()
 
-  // Get user's ladder position
-  const { data: ladderEntry } = await supabase
-    .from('ladder')
-    .select('position, season_id, available_wildcards')
+  // Get user's ladder position (only if there's an active season)
+  const { data: ladderEntry } = season ? await supabase
+    .from('ladder_positions')
+    .select('position, season_id')
     .eq('user_id', user.id)
-    .eq('season_id', season?.id || '')
+    .eq('season_id', season.id)
+    .eq('is_active', true)
     .maybeSingle()
+    : { data: null }
 
-  // Get total ladder players
-  const { count: totalPlayers } = await supabase
-    .from('ladder')
+  // Get total ladder players (only if there's an active season)
+  const { count: totalPlayers } = season ? await supabase
+    .from('ladder_positions')
     .select('*', { count: 'exact', head: true })
-    .eq('season_id', season?.id || '')
+    .eq('season_id', season.id)
+    .eq('is_active', true)
+    : { count: 0 }
+
+  // Calculate available wildcards
+  const { data: wildcardsUsed } = season && ladderEntry ? await supabase
+    .from('wildcard_usage')
+    .select('id')
+    .eq('season_id', season.id)
+    .eq('user_id', user.id)
+    : { data: [] }
+
+  const availableWildcards = season && ladderEntry
+    ? (season.wildcards_per_player - (wildcardsUsed?.length || 0))
+    : 0
+
+  // Get all ladder players for the interactive ladder
+  const { data: rawLadderPlayers } = season ? await supabase
+    .from('ladder_positions')
+    .select(`
+      id,
+      position,
+      user_id,
+      user:users!ladder_positions_user_id_fkey(id, name, email)
+    `)
+    .eq('season_id', season.id)
+    .eq('is_active', true)
+    .order('position', { ascending: true })
+    : { data: [] }
+
+  // Transform the data to match the expected type
+  const ladderPlayers = rawLadderPlayers?.map((player: any) => ({
+    id: player.id,
+    position: player.position,
+    user_id: player.user_id,
+    user: Array.isArray(player.user) ? player.user[0] : player.user
+  })) || []
 
   // Get user's match stats
   const { count: wins } = await supabase
@@ -149,9 +188,9 @@ export default async function DashboardPage() {
               <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Zap className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
-              {ladderEntry && ladderEntry.available_wildcards > 0 && (
+              {ladderEntry && availableWildcards > 0 && (
                 <div className="badge bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-lg font-bold">
-                  {ladderEntry.available_wildcards}
+                  {availableWildcards}
                 </div>
               )}
             </div>
@@ -159,7 +198,7 @@ export default async function DashboardPage() {
               Wildcards Left
             </h3>
             <p className="text-2xl font-heading font-bold text-gray-900 dark:text-white">
-              {ladderEntry?.available_wildcards || 0}
+              {availableWildcards}
             </p>
           </div>
         </div>
@@ -215,79 +254,14 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        {/* Status Section */}
-        <div className="card p-8">
-          {ladderEntry ? (
-            <>
-              <h2 className="text-2xl font-heading font-bold text-gray-900 dark:text-white mb-4">
-                You&apos;re on the Ladder!
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                    <Trophy className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      Current position: #{ladderEntry.position}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {ladderEntry.position === 1
-                        ? "You're at the top! Defend your position!"
-                        : `Challenge players above you to climb the ladder`}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                    <Zap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      Wildcards: {ladderEntry.available_wildcards}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Use wildcards to challenge players further up the ladder
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <h2 className="text-2xl font-heading font-bold text-gray-900 dark:text-white mb-4">
-                Get Started
-              </h2>
-              <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-6">
-                <div className="flex items-start gap-4">
-                  <Trophy className="w-8 h-8 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-1" />
-                  <div>
-                    <h3 className="font-semibold text-primary-900 dark:text-primary-100 mb-2">
-                      Join the Ladder
-                    </h3>
-                    <p className="text-primary-800 dark:text-primary-200 mb-4">
-                      You&apos;re not currently on the ladder. Contact an admin to be added and start competing!
-                    </p>
-                    <ul className="space-y-2 text-sm text-primary-700 dark:text-primary-300">
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary-600 dark:bg-primary-400" />
-                        Wait for an admin to add you to the ladder
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary-600 dark:bg-primary-400" />
-                        Once added, you can challenge other players
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary-600 dark:bg-primary-400" />
-                        Win matches to climb the rankings
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+        {/* Interactive Ladder */}
+        <InteractiveLadder
+          players={ladderPlayers || []}
+          currentUserId={user.id}
+          currentUserPosition={ladderEntry?.position || null}
+          seasonId={season?.id || ''}
+          availableWildcards={availableWildcards}
+        />
       </div>
     </div>
   )
