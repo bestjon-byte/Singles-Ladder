@@ -30,23 +30,39 @@ export default async function DashboardPage() {
   // Get active season
   const { data: season } = await supabase
     .from('seasons')
-    .select('id, name')
+    .select('id, name, wildcards_per_player')
     .eq('is_active', true)
     .maybeSingle()
 
-  // Get user's ladder position
-  const { data: ladderEntry } = await supabase
-    .from('ladder')
-    .select('position, season_id, available_wildcards')
+  // Get user's ladder position (only if there's an active season)
+  const { data: ladderEntry } = season ? await supabase
+    .from('ladder_positions')
+    .select('position, season_id')
     .eq('user_id', user.id)
-    .eq('season_id', season?.id || '')
+    .eq('season_id', season.id)
+    .eq('is_active', true)
     .maybeSingle()
+    : { data: null }
 
-  // Get total ladder players
-  const { count: totalPlayers } = await supabase
-    .from('ladder')
+  // Get total ladder players (only if there's an active season)
+  const { count: totalPlayers } = season ? await supabase
+    .from('ladder_positions')
     .select('*', { count: 'exact', head: true })
-    .eq('season_id', season?.id || '')
+    .eq('season_id', season.id)
+    .eq('is_active', true)
+    : { count: 0 }
+
+  // Calculate available wildcards
+  const { data: wildcardsUsed } = season && ladderEntry ? await supabase
+    .from('wildcard_usage')
+    .select('id')
+    .eq('season_id', season.id)
+    .eq('user_id', user.id)
+    : { data: [] }
+
+  const availableWildcards = season && ladderEntry
+    ? (season.wildcards_per_player - (wildcardsUsed?.length || 0))
+    : 0
 
   // Get user's match stats
   const { count: wins } = await supabase
@@ -149,9 +165,9 @@ export default async function DashboardPage() {
               <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Zap className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
-              {ladderEntry && ladderEntry.available_wildcards > 0 && (
+              {ladderEntry && availableWildcards > 0 && (
                 <div className="badge bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-lg font-bold">
-                  {ladderEntry.available_wildcards}
+                  {availableWildcards}
                 </div>
               )}
             </div>
@@ -159,7 +175,7 @@ export default async function DashboardPage() {
               Wildcards Left
             </h3>
             <p className="text-2xl font-heading font-bold text-gray-900 dark:text-white">
-              {ladderEntry?.available_wildcards || 0}
+              {availableWildcards}
             </p>
           </div>
         </div>
@@ -244,7 +260,7 @@ export default async function DashboardPage() {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">
-                      Wildcards: {ladderEntry.available_wildcards}
+                      Wildcards: {availableWildcards}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       Use wildcards to challenge players further up the ladder
