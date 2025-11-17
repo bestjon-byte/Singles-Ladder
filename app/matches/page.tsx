@@ -64,7 +64,9 @@ export default async function MatchesPage() {
       player1:users!matches_player1_id_fkey(id, name, email),
       player2:users!matches_player2_id_fkey(id, name, email),
       winner:users!matches_winner_id_fkey(id, name),
-      challenge:challenges(id, is_wildcard)
+      challenge:challenges(id, is_wildcard),
+      is_disputed,
+      disputed_by_user_id
     `)
     .eq('season_id', activeSeason.id)
     .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)

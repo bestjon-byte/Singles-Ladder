@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { submitMatchScore } from '@/lib/actions/matches'
-import { ChevronDown, ChevronUp, MapPin, Calendar, Trophy, Star } from 'lucide-react'
+import { ChevronDown, ChevronUp, MapPin, Calendar, Trophy, Star, AlertTriangle } from 'lucide-react'
 
 interface Match {
   id: string
@@ -19,6 +19,8 @@ interface Match {
   final_set_type: string | null
   winner_id: string | null
   completed_at: string | null
+  is_disputed: boolean
+  disputed_by_user_id: string | null
   player1: {
     id: string
     name: string
@@ -50,6 +52,7 @@ export default function MatchCard({ match, currentUserId }: MatchCardProps) {
   const [showScoreForm, setShowScoreForm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [disputeLoading, setDisputeLoading] = useState(false)
 
   const [set1P1, setSet1P1] = useState('')
   const [set1P2, setSet1P2] = useState('')
@@ -114,6 +117,30 @@ export default function MatchCard({ match, currentUserId }: MatchCardProps) {
     }
   }
 
+  const handleDispute = async () => {
+    if (!confirm('Are you sure you want to dispute this match result? An admin will review and resolve the dispute.')) {
+      return
+    }
+
+    setDisputeLoading(true)
+    setError(null)
+
+    try {
+      const { disputeMatchScore } = await import('@/lib/actions/disputes')
+      const result = await disputeMatchScore(match.id)
+
+      if (result.error) {
+        setError(result.error)
+      } else {
+        router.refresh()
+      }
+    } catch (err) {
+      setError('Failed to submit dispute')
+    } finally {
+      setDisputeLoading(false)
+    }
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-GB', {
       day: 'numeric',
@@ -124,6 +151,7 @@ export default function MatchCard({ match, currentUserId }: MatchCardProps) {
 
   const isPlayer1 = match.player1.id === currentUserId
   const isCompleted = !!match.winner_id
+  const canDispute = isCompleted && !match.is_disputed && (match.player1.id === currentUserId || match.player2.id === currentUserId)
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all hover:shadow-md">
@@ -147,10 +175,21 @@ export default function MatchCard({ match, currentUserId }: MatchCardProps) {
             {isCompleted ? (
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 text-sm">
-                  <Trophy className="w-4 h-4 text-yellow-500" />
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {match.winner?.name}
-                  </span>
+                  {match.is_disputed ? (
+                    <>
+                      <AlertTriangle className="w-4 h-4 text-red-500" />
+                      <span className="font-medium text-red-600 dark:text-red-400">
+                        Disputed
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Trophy className="w-4 h-4 text-yellow-500" />
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {match.winner?.name}
+                      </span>
+                    </>
+                  )}
                 </div>
                 <div className="flex gap-1 text-sm font-mono">
                   <span className={match.winner_id === match.player1.id ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400'}>
@@ -269,7 +308,35 @@ export default function MatchCard({ match, currentUserId }: MatchCardProps) {
                   Final set was a championship tiebreak
                 </p>
               )}
+
+              {/* Disputed Status */}
+              {match.is_disputed && (
+                <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                  <div className="flex items-center gap-2 text-red-800 dark:text-red-400 font-medium">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>This match result is disputed</span>
+                  </div>
+                  <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                    An admin will review and resolve this dispute
+                  </p>
+                </div>
+              )}
             </div>
+
+            {/* Dispute Button */}
+            {canDispute && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDispute()
+                }}
+                disabled={disputeLoading}
+                className="w-full mt-4 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <AlertTriangle className="w-4 h-4" />
+                {disputeLoading ? 'Submitting Dispute...' : 'Dispute Score'}
+              </button>
+            )}
           ) : (
             <button
               onClick={(e) => {

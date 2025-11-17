@@ -200,6 +200,14 @@ export async function submitMatchScore(params: SubmitScoreParams) {
   }
 }
 
+export async function updateLadderPositionsForDispute(
+  seasonId: string,
+  winnerId: string,
+  loserId: string
+) {
+  return updateLadderPositions(seasonId, winnerId, loserId)
+}
+
 async function updateLadderPositions(
   seasonId: string,
   winnerId: string,
