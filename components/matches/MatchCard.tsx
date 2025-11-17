@@ -321,22 +321,22 @@ export default function MatchCard({ match, currentUserId }: MatchCardProps) {
                   </p>
                 </div>
               )}
-            </div>
 
-            {/* Dispute Button */}
-            {canDispute && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleDispute()
-                }}
-                disabled={disputeLoading}
-                className="w-full mt-4 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                <AlertTriangle className="w-4 h-4" />
-                {disputeLoading ? 'Submitting Dispute...' : 'Dispute Score'}
-              </button>
-            )}
+              {/* Dispute Button */}
+              {canDispute && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDispute()
+                  }}
+                  disabled={disputeLoading}
+                  className="w-full mt-4 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <AlertTriangle className="w-4 h-4" />
+                  {disputeLoading ? 'Submitting Dispute...' : 'Dispute Score'}
+                </button>
+              )}
+            </div>
           ) : (
             <button
               onClick={(e) => {
