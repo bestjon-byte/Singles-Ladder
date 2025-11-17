@@ -32,7 +32,7 @@ export default async function AdminHome() {
       {/* ALERTS - Show only what needs attention */}
       <div className="space-y-4 mb-8">
         {/* Disputed Matches Alert */}
-        {disputeCount > 0 && (
+        {disputeCount !== null && disputeCount > 0 && (
           <Link
             href="/admin/disputes"
             className="block p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
@@ -95,7 +95,7 @@ export default async function AdminHome() {
         )}
 
         {/* All Good - No Alerts */}
-        {disputeCount === 0 && activeSeason && !seasonEndingSoon && (
+        {disputeCount !== null && disputeCount === 0 && activeSeason && !seasonEndingSoon && (
           <div className="p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-center">
             <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
               <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -157,7 +157,7 @@ export default async function AdminHome() {
             <AlertTriangle className="w-5 h-5 text-gray-500 dark:text-gray-400" />
             <div className="flex items-center gap-2">
               <span className="font-medium text-gray-900 dark:text-white">Review Disputes</span>
-              {disputeCount > 0 && (
+              {disputeCount !== null && disputeCount > 0 && (
                 <span className="px-1.5 py-0.5 text-xs font-semibold text-white bg-red-600 rounded-full">
                   {disputeCount}
                 </span>
