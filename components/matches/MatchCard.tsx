@@ -89,16 +89,21 @@ export default function MatchCard({ match, currentUserId }: MatchCardProps) {
 
     if (result.error) {
       setError(result.error)
+      console.error('Score submission error:', result.error)
     } else {
       setShowScoreForm(false)
-      // Refresh the page to show updated ladder positions
-      console.log('Refreshing page...')
-      router.refresh()
-      // Force a hard refresh after a short delay to ensure cache is cleared
-      setTimeout(() => {
-        console.log('Forcing window reload...')
-        window.location.reload()
-      }, 500)
+      console.log('Score submitted successfully')
+
+      // Only reload if ladder positions were actually updated
+      if ('debug' in result && result.debug && result.debug.ladderUpdateStatus === 'updated') {
+        console.log('Ladder was updated - reloading page in 2 seconds...')
+        setTimeout(() => {
+          window.location.reload()
+        }, 2000)
+      } else {
+        console.log('No ladder update needed - just refreshing...')
+        router.refresh()
+      }
     }
   }
 
