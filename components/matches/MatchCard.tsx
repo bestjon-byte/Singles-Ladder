@@ -91,7 +91,14 @@ export default function MatchCard({ match, currentUserId }: MatchCardProps) {
       setError(result.error)
     } else {
       setShowScoreForm(false)
+      // Refresh the page to show updated ladder positions
+      console.log('Refreshing page...')
       router.refresh()
+      // Force a hard refresh after a short delay to ensure cache is cleared
+      setTimeout(() => {
+        console.log('Forcing window reload...')
+        window.location.reload()
+      }, 500)
     }
   }
 

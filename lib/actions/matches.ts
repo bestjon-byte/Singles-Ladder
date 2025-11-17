@@ -174,10 +174,18 @@ export async function submitMatchScore(params: SubmitScoreParams) {
     // TODO: Update player stats (Phase 6)
     // TODO: Create notifications (Phase 4)
 
+    // Aggressively clear all relevant caches
     revalidatePath('/matches')
+    revalidatePath('/matches', 'page')
     revalidatePath('/challenges')
+    revalidatePath('/challenges', 'page')
     revalidatePath('/dashboard')
+    revalidatePath('/dashboard', 'page')
     revalidatePath('/admin/ladder')
+    revalidatePath('/admin/ladder', 'page')
+    revalidatePath('/', 'layout') // Clear all cached data
+
+    console.log('All paths revalidated')
 
     return {
       success: true,
