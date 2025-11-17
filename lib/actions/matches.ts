@@ -120,7 +120,13 @@ export async function submitMatchScore(params: SubmitScoreParams) {
 
       // If challenger won, they move up
       if (winnerId === challenge.challenger_id) {
-        await updateLadderPositions(match.season_id, challenge.challenger_id, challenge.challenged_id)
+        try {
+          await updateLadderPositions(match.season_id, challenge.challenger_id, challenge.challenged_id)
+          console.log(`Ladder positions updated: challenger ${challenge.challenger_id} moved up`)
+        } catch (error) {
+          console.error('Error updating ladder positions:', error)
+          // Don't fail the match submission, but log the error
+        }
       }
       // If challenger lost, no position change
     }
@@ -131,6 +137,7 @@ export async function submitMatchScore(params: SubmitScoreParams) {
     revalidatePath('/matches')
     revalidatePath('/challenges')
     revalidatePath('/dashboard')
+    revalidatePath('/admin/ladder')
 
     return { success: true }
   } catch (error) {
@@ -146,37 +153,56 @@ async function updateLadderPositions(
 ) {
   const supabase = await createClient()
 
+  console.log(`Starting ladder position update - Winner: ${winnerId}, Loser: ${loserId}`)
+
   // Get both players' positions
-  const { data: positions } = await supabase
+  const { data: positions, error: positionsError } = await supabase
     .from('ladder_positions')
     .select('id, user_id, position')
     .eq('season_id', seasonId)
     .in('user_id', [winnerId, loserId])
     .eq('is_active', true)
 
+  if (positionsError) {
+    console.error('Error fetching positions:', positionsError)
+    throw positionsError
+  }
+
   if (!positions || positions.length !== 2) {
-    console.error('Could not find both players on ladder')
-    return
+    console.error('Could not find both players on ladder. Found:', positions)
+    throw new Error('Could not find both players on ladder')
   }
 
   const winnerPos = positions.find(p => p.user_id === winnerId)
   const loserPos = positions.find(p => p.user_id === loserId)
 
-  if (!winnerPos || !loserPos) return
+  if (!winnerPos || !loserPos) {
+    console.error('Could not match winner/loser positions')
+    throw new Error('Could not match winner/loser positions')
+  }
+
+  console.log(`Winner position: ${winnerPos.position}, Loser position: ${loserPos.position}`)
 
   // Winner takes the loser's position, loser and everyone in between moves down
   if (winnerPos.position > loserPos.position) {
     const newWinnerPosition = loserPos.position
     const oldWinnerPosition = winnerPos.position
 
+    console.log(`Moving winner from position ${oldWinnerPosition} to ${newWinnerPosition}`)
+
     // Step 1: Move winner to a temporary position to avoid conflicts
-    await supabase
+    const { error: tempError } = await supabase
       .from('ladder_positions')
       .update({ position: -1 })
       .eq('id', winnerPos.id)
 
+    if (tempError) {
+      console.error('Error moving winner to temp position:', tempError)
+      throw tempError
+    }
+
     // Step 2: Get all players between loser and winner (inclusive of loser, exclusive of old winner position)
-    const { data: playersToShift } = await supabase
+    const { data: playersToShift, error: shiftQueryError } = await supabase
       .from('ladder_positions')
       .select('id, user_id, position')
       .eq('season_id', seasonId)
@@ -185,24 +211,41 @@ async function updateLadderPositions(
       .lt('position', oldWinnerPosition)
       .order('position', { ascending: false })
 
+    if (shiftQueryError) {
+      console.error('Error querying players to shift:', shiftQueryError)
+      throw shiftQueryError
+    }
+
+    console.log(`Players to shift down: ${playersToShift?.length || 0}`)
+
     // Step 3: Shift everyone down by 1 (in reverse order to avoid conflicts)
     if (playersToShift && playersToShift.length > 0) {
       for (const player of playersToShift) {
-        await supabase
+        const { error: shiftError } = await supabase
           .from('ladder_positions')
           .update({ position: player.position + 1 })
           .eq('id', player.id)
+
+        if (shiftError) {
+          console.error(`Error shifting player ${player.user_id}:`, shiftError)
+          throw shiftError
+        }
       }
     }
 
     // Step 4: Move winner to new position
-    await supabase
+    const { error: finalError } = await supabase
       .from('ladder_positions')
       .update({ position: newWinnerPosition })
       .eq('id', winnerPos.id)
 
+    if (finalError) {
+      console.error('Error moving winner to final position:', finalError)
+      throw finalError
+    }
+
     // Step 5: Record in ladder history
-    await supabase
+    const { error: historyError } = await supabase
       .from('ladder_history')
       .insert({
         season_id: seasonId,
@@ -211,6 +254,15 @@ async function updateLadderPositions(
         new_position: newWinnerPosition,
         change_reason: 'match_result',
       })
+
+    if (historyError) {
+      console.error('Error recording ladder history:', historyError)
+      // Don't throw here - history is not critical
+    }
+
+    console.log(`Successfully updated ladder positions`)
+  } else {
+    console.log(`Winner position (${winnerPos.position}) is not below loser position (${loserPos.position}) - no update needed`)
   }
 }
 

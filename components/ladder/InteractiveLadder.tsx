@@ -40,12 +40,21 @@ export default function InteractiveLadder({
     return diff > 0 && diff <= 2
   }
 
+  const isPlayerAbove = (playerPosition: number) => {
+    if (!currentUserPosition) return false
+    // Lower position number means higher on ladder
+    return playerPosition < currentUserPosition
+  }
+
   const handlePlayerClick = (player: LadderPlayer) => {
     // Can't challenge yourself
     if (player.user_id === currentUserId) return
 
     // Can't challenge if not on ladder
     if (!currentUserPosition) return
+
+    // Can't challenge players below you
+    if (!isPlayerAbove(player.position)) return
 
     const needsWildcard = !canChallengeWithoutWildcard(player.position)
 
@@ -71,6 +80,9 @@ export default function InteractiveLadder({
   const getPlayerStatus = (player: LadderPlayer) => {
     if (player.user_id === currentUserId) return 'current'
     if (!currentUserPosition) return 'disabled'
+
+    // Can't challenge players at or below you
+    if (!isPlayerAbove(player.position)) return 'disabled'
 
     if (canChallengeWithoutWildcard(player.position)) return 'challengeable'
     if (availableWildcards > 0) return 'wildcard'
