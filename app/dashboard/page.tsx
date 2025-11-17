@@ -66,7 +66,7 @@ export default async function DashboardPage() {
     : 0
 
   // Get all ladder players for the interactive ladder
-  const { data: ladderPlayers } = season ? await supabase
+  const { data: rawLadderPlayers } = season ? await supabase
     .from('ladder_positions')
     .select(`
       id,
@@ -78,6 +78,14 @@ export default async function DashboardPage() {
     .eq('is_active', true)
     .order('position', { ascending: true })
     : { data: [] }
+
+  // Transform the data to match the expected type
+  const ladderPlayers = rawLadderPlayers?.map((player: any) => ({
+    id: player.id,
+    position: player.position,
+    user_id: player.user_id,
+    user: Array.isArray(player.user) ? player.user[0] : player.user
+  })) || []
 
   // Get user's match stats
   const { count: wins } = await supabase
