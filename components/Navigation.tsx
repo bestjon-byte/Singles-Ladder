@@ -19,8 +19,7 @@ export default function Navigation({ isAdmin = false, userName }: NavigationProp
   const isActive = (path: string) => pathname === path
 
   const navLinks = [
-    { href: '/dashboard', label: 'Dashboard', icon: Trophy },
-    { href: '/challenges', label: 'Challenges', icon: Target },
+    { href: '/dashboard', label: 'Ladder', icon: Trophy },
     { href: '/matches', label: 'Matches', icon: Award },
     { href: '/profile', label: 'Profile', icon: User },
     ...(isAdmin ? [{ href: '/admin', label: 'Admin', icon: Settings }] : []),

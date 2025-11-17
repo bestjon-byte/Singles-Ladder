@@ -241,13 +241,27 @@ async function rollbackLadderUpdate(
 
   console.log(`Current positions - Challenger: ${challengerPos.position}, Challenged: ${challengedPos.position}`)
 
+  // Get the challenger's ORIGINAL position from ladder history (before they won the challenge)
+  const { data: historyEntry } = await supabase
+    .from('ladder_history')
+    .select('previous_position')
+    .eq('season_id', seasonId)
+    .eq('user_id', challengerId)
+    .eq('change_reason', 'challenge_win')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  console.log('Ladder history entry:', historyEntry)
+
   // Challenger should be above (lower position number) challenged after the original win
-  // We need to reverse this: move challenger back down, move challenged back up
+  // We need to reverse this: move challenger back to their ORIGINAL position
   if (challengerPos.position < challengedPos.position) {
-    const newChallengerPosition = challengedPos.position
+    // Use the original position from history if available, otherwise fallback to challenged position
+    const newChallengerPosition = historyEntry?.previous_position || challengedPos.position
     const oldChallengerPosition = challengerPos.position
 
-    console.log(`Rolling back: Challenger from ${oldChallengerPosition} to ${newChallengerPosition}`)
+    console.log(`Rolling back: Challenger from ${oldChallengerPosition} to ${newChallengerPosition} (original position)`)
 
     // Move challenger to temp position
     await supabase
