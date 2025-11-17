@@ -62,9 +62,11 @@ export default function MatchCard({ match, currentUserId }: MatchCardProps) {
 
   const handleSubmitScore = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('🎾 handleSubmitScore called - form submitted!')
     setLoading(true)
     setError(null)
 
+    console.log('🎾 Submitting score for match:', match.id)
     const result = await submitMatchScore({
       matchId: match.id,
       set1Player1: parseInt(set1P1),
@@ -77,31 +79,36 @@ export default function MatchCard({ match, currentUserId }: MatchCardProps) {
     })
 
     // Log debug info to browser console
-    console.log('=== LADDER UPDATE DEBUG (Browser) ===')
-    console.log('Full result:', result)
+    console.log('🎾 =================================')
+    console.log('🎾 LADDER UPDATE DEBUG')
+    console.log('🎾 Full result:', result)
     if ('debug' in result && result.debug) {
-      console.log('Ladder update status:', result.debug.ladderUpdateStatus)
-      console.log('Ladder update details:', result.debug.ladderUpdateDetails)
+      console.log('🎾 Ladder update status:', result.debug.ladderUpdateStatus)
+      console.log('🎾 Ladder update details:', result.debug.ladderUpdateDetails)
+    } else {
+      console.log('🎾 No debug info in result')
     }
-    console.log('=====================================')
+    console.log('🎾 =================================')
 
     setLoading(false)
 
     if (result.error) {
+      console.error('🎾 ❌ ERROR:', result.error)
       setError(result.error)
-      console.error('Score submission error:', result.error)
+      alert('Error submitting score: ' + result.error) // Temporary alert to see error
     } else {
+      console.log('🎾 ✅ Score submitted successfully!')
       setShowScoreForm(false)
-      console.log('Score submitted successfully')
 
       // Only reload if ladder positions were actually updated
       if ('debug' in result && result.debug && result.debug.ladderUpdateStatus === 'updated') {
-        console.log('Ladder was updated - reloading page in 2 seconds...')
+        console.log('🎾 🔄 Ladder was updated - reloading page in 2 seconds...')
         setTimeout(() => {
+          console.log('🎾 Reloading now...')
           window.location.reload()
         }, 2000)
       } else {
-        console.log('No ladder update needed - just refreshing...')
+        console.log('🎾 No ladder update - just refreshing router...')
         router.refresh()
       }
     }
