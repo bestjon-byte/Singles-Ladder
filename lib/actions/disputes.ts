@@ -255,19 +255,22 @@ async function rollbackLadderUpdate(
       .update({ position: -1 })
       .eq('id', challengerPos.id)
 
-    // Get all players between old and new challenger position
+    // Get all players that need to shift up (between old and new position, excluding the now-empty old position)
     const { data: playersToShift } = await supabase
       .from('ladder_positions')
       .select('id, user_id, position')
       .eq('season_id', seasonId)
       .eq('is_active', true)
-      .gte('position', oldChallengerPosition)
-      .lt('position', newChallengerPosition)
+      .gt('position', oldChallengerPosition)  // Greater than (not including) old position
+      .lte('position', newChallengerPosition)  // Less than or equal to new position
       .order('position', { ascending: true })
 
-    // Shift everyone up (decrease position number)
+    console.log(`Players to shift up: ${playersToShift?.length || 0}`)
+
+    // Shift everyone up (decrease position number by 1)
     if (playersToShift && playersToShift.length > 0) {
       for (const player of playersToShift) {
+        console.log(`Shifting player ${player.user_id} from ${player.position} to ${player.position - 1}`)
         await supabase
           .from('ladder_positions')
           .update({ position: player.position - 1 })
@@ -276,6 +279,7 @@ async function rollbackLadderUpdate(
     }
 
     // Move challenger to final position
+    console.log(`Moving challenger from -1 to ${newChallengerPosition}`)
     await supabase
       .from('ladder_positions')
       .update({ position: newChallengerPosition })
