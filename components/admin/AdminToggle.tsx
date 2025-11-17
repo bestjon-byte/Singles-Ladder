@@ -54,7 +54,7 @@ export default function AdminToggle({ userId, userName, isAdmin, isCurrentUser }
         onClick={handleToggle}
         disabled={loading || (isCurrentUser && isAdmin)}
         className={`
-          p-2 rounded-lg transition-colors
+          p-2 rounded-lg transition-colors focus:ring-2 focus:ring-primary-500 focus:outline-none
           ${isAdmin
             ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/50'
             : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -62,6 +62,7 @@ export default function AdminToggle({ userId, userName, isAdmin, isCurrentUser }
           disabled:opacity-50 disabled:cursor-not-allowed
         `}
         title={isAdmin ? 'Remove admin' : 'Make admin'}
+        aria-label={isAdmin ? `Remove admin privileges from ${userName}` : `Grant admin privileges to ${userName}`}
       >
         {isAdmin ? (
           <Shield className="w-5 h-5" />

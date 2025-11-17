@@ -16,7 +16,7 @@ export default async function AdminLadderPage() {
   if (!activeSeason) {
     return (
       <div className="px-4 sm:px-0">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+        <h1 className="text-3xl font-heading font-bold text-gray-900 dark:text-white mb-8">
           Manage Ladder
         </h1>
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
@@ -55,7 +55,7 @@ export default async function AdminLadderPage() {
 
   return (
     <div className="px-4 sm:px-0">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+      <h1 className="text-3xl font-heading font-bold text-gray-900 dark:text-white mb-8">
         Manage Ladder
       </h1>
 
