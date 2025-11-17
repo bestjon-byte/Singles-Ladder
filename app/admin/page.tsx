@@ -61,7 +61,7 @@ export default async function AdminHome() {
               <Calendar className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
               <div>
                 <p className="font-semibold text-amber-900 dark:text-amber-100">
-                  Season "{activeSeason.name}" ends in {daysUntilEnd} {daysUntilEnd === 1 ? 'day' : 'days'}
+                  Season {activeSeason.name} ends in {daysUntilEnd} {daysUntilEnd === 1 ? 'day' : 'days'}
                 </p>
                 <p className="text-sm text-amber-700 dark:text-amber-300">
                   Consider planning the next season
