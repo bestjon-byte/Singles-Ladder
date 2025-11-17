@@ -8,11 +8,23 @@ This file contains essential context, variables, and information for AI-assisted
 
 **Tennis Singles Ladder** - A mobile-optimized web application for managing tennis club ladders independently, featuring player challenges, automated ladder updates, match scheduling, playoffs, and comprehensive statistics tracking.
 
-**Current Status:** Phase 1 - MOSTLY COMPLETE
-- ✅ Authentication & User Management
-- ✅ Admin Panel (full GUI)
-- ✅ Ladder Display & Management
-- ⏳ User Profile Page (remaining)
+**Current Status:** Phase 3 - MOSTLY COMPLETE
+
+### ✅ Completed Phases:
+- ✅ **Phase 1:** Authentication, Admin Panel, Ladder Display, User Profiles
+- ✅ **Phase 2:** Challenge System (simplified - NO negotiation)
+  - Create/accept/reject/withdraw challenges
+  - Wildcard system
+  - Player locking
+- ✅ **Phase 3 (Partial):** Match scoring, ladder updates, basic match history
+
+### ⏳ Remaining Work:
+- **Phase 3 Completion:**
+  - Score disputes (admin resolution)
+  - Enhanced match history (filters, detailed view)
+- **Phase 4:** Notifications (email, WhatsApp, in-app)
+- **Phase 5:** Playoffs & Season End
+- **Phase 6:** Statistics & Analytics
 
 ---
 
@@ -110,9 +122,10 @@ FROM_EMAIL=noreply@tennisladder.com
    - season_id, match_id
    - status, is_wildcard, proposed dates/times/locations
 
-6. **challenge_negotiations** - Negotiation history
+6. **challenge_negotiations** - Negotiation history (NOT USED - feature removed)
    - challenge_id, proposed_by
    - proposed_date, proposed_time, proposed_location
+   - *Note: Table exists in database but feature was not implemented*
 
 7. **matches** - Completed matches
    - challenge_id, winner_id, loser_id
@@ -393,29 +406,42 @@ WHERE is_active = TRUE;
 
 ---
 
-## Next Steps (Phase 2)
+## Next Steps (Phase 3 Completion & Phase 4)
 
-### Challenge System Implementation
+### Phase 3 Remaining Features
 
-**Priority Features:**
-1. Challenge creation (normal + wildcard)
-2. Challenge validation (position rules, player locks)
-3. Challenge negotiation (date/time/location proposals)
-4. Challenge acceptance/rejection
-5. Auto-forfeit after 2 weeks
+**3.2 Score Disputes:**
+- [ ] Either player can dispute a submitted score
+- [ ] Match status: "Disputed"
+- [ ] Admin receives notification
+- [ ] Admin can view both perspectives
+- [ ] Admin confirms or reverses result
+- [ ] If reversed, ladder positions roll back
+
+**3.3 Enhanced Match History:**
+- [ ] View all completed matches ✅ (basic version exists)
+- [ ] Filter by player, season
+- [ ] Show detailed scores ✅ (already showing)
+- [ ] Show position changes
 
 **Required Files:**
-- `app/challenges/page.tsx` - Challenge list
-- `app/challenges/create/page.tsx` - Create challenge form
-- `components/challenges/ChallengeCard.tsx` - Challenge display
-- `lib/actions/challenges.ts` - Challenge server actions
-- Update dashboard to show active challenges
+- `app/admin/disputes/page.tsx` - Admin dispute resolution
+- `lib/actions/disputes.ts` - Dispute server actions
+- Update `components/matches/MatchCard.tsx` - Add dispute button
+- Update `app/matches/page.tsx` - Add filters
+
+### Phase 4: Notifications
+
+**Priority Features:**
+1. Email notifications via Resend
+2. In-app notification system
+3. WhatsApp message formatting
+4. Notification preferences
 
 **Database Usage:**
-- `challenges` table
-- `challenge_negotiations` table
-- `wildcard_usage` table
-- Update `ladder_positions` to track locked players
+- `notifications` table (exists)
+- Email templates
+- Notification triggers
 
 ---
 
@@ -458,13 +484,18 @@ vercel logs
 
 ## Session Notes
 
-**Last Updated:** 2025-01-16
-**Phase:** 1 - Core Foundation (MOSTLY COMPLETE)
-**Recent Work:** Admin Panel implementation with full GUI management
+**Last Updated:** 2025-11-17
+**Phase:** 3 - Match & Scoring (MOSTLY COMPLETE)
+**Recent Work:**
+- Removed duplicate challenge cards from dashboard
+- Enhanced Win Rate panel with match history link
+- Improved sign-in button disabled state
+- Updated documentation to reflect actual implementation status
 
 **Important Context for Future Sessions:**
 - All database migrations are applied to production
-- Admin panel is fully functional (create seasons, manage ladder, view users)
-- User authentication working with auto-profile creation
-- Main branch has all Phase 1 features except user profile page
-- Next priority is Phase 2: Challenge System
+- Phases 1, 2, and most of 3 are complete
+- **Challenge negotiation was removed** - challenges are accept/reject only
+- `challenge_negotiations` table exists but is NOT used in code
+- Match scoring and ladder updates are fully functional
+- Next priority: Score disputes (Phase 3.2) or Notifications (Phase 4)

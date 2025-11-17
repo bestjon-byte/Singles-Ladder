@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { requireAdmin } from '@/lib/utils/admin'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Shield, Users, Calendar, TrendingUp, LayoutDashboard } from 'lucide-react'
+import { Shield, Users, Calendar, TrendingUp, LayoutDashboard, AlertTriangle } from 'lucide-react'
 import Navigation from '@/components/Navigation'
 
 export default async function AdminLayout({
@@ -51,6 +51,13 @@ export default async function AdminLayout({
             >
               <TrendingUp className="w-4 h-4" />
               Ladder
+            </Link>
+            <Link
+              href="/admin/disputes"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <AlertTriangle className="w-4 h-4" />
+              Disputes
             </Link>
           </div>
         </div>

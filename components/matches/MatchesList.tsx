@@ -16,6 +16,8 @@ interface Match {
   final_set_type: string | null
   winner_id: string | null
   completed_at: string | null
+  is_disputed: boolean
+  disputed_by_user_id: string | null
   player1: {
     id: string
     name: string
