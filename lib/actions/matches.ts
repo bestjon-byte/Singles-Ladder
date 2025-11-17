@@ -205,7 +205,12 @@ async function updateLadderPositions(
   winnerId: string,
   loserId: string
 ) {
-  const supabase = await createClient()
+  // Use service role client to bypass RLS for system operations
+  const { createClient: createServiceClient } = await import('@supabase/supabase-js')
+  const supabase = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
 
   console.log(`Starting ladder position update - Winner: ${winnerId}, Loser: ${loserId}`)
 

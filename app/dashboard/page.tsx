@@ -82,6 +82,10 @@ export default async function DashboardPage() {
     .order('position', { ascending: true })
     : { data: [] }
 
+  console.log('=== DASHBOARD LADDER DATA ===')
+  console.log('Raw ladder players:', JSON.stringify(rawLadderPlayers, null, 2))
+  console.log('============================')
+
   // Transform the data to match the expected type
   const ladderPlayers = rawLadderPlayers?.map((player: any) => ({
     id: player.id,
@@ -89,6 +93,8 @@ export default async function DashboardPage() {
     user_id: player.user_id,
     user: Array.isArray(player.user) ? player.user[0] : player.user
   })) || []
+
+  console.log('Transformed ladder players:', JSON.stringify(ladderPlayers, null, 2))
 
   // Get user's match stats (only count completed matches with a winner)
   const { count: wins } = await supabase
