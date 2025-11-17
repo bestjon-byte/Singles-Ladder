@@ -35,8 +35,6 @@ export default function LadderManagement({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [editingUserId, setEditingUserId] = useState<string | null>(null)
-  const [editPosition, setEditPosition] = useState('')
 
   const handleAddPlayer = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -98,58 +96,6 @@ export default function LadderManagement({
       }
     } catch (err: any) {
       setError(err.message || 'Failed to remove player')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleEditPosition = (userId: string, currentPosition: number) => {
-    setEditingUserId(userId)
-    setEditPosition(currentPosition.toString())
-    setError(null)
-    setSuccess(null)
-  }
-
-  const handleCancelEdit = () => {
-    setEditingUserId(null)
-    setEditPosition('')
-  }
-
-  const handleSavePosition = async (userId: string, userName: string, currentPosition: number) => {
-    const newPos = parseInt(editPosition)
-
-    if (isNaN(newPos) || newPos < 1) {
-      setError('Position must be at least 1')
-      return
-    }
-
-    if (newPos > initialPositions.length) {
-      setError(`Position cannot be greater than ${initialPositions.length}`)
-      return
-    }
-
-    if (newPos === currentPosition) {
-      handleCancelEdit()
-      return
-    }
-
-    setLoading(true)
-    setError(null)
-    setSuccess(null)
-
-    try {
-      const result = await movePlayerPosition(seasonId, userId, newPos)
-
-      if (result.error) {
-        setError(result.error)
-      } else {
-        setSuccess(`${userName} moved to position ${newPos}`)
-        setEditingUserId(null)
-        setEditPosition('')
-        router.refresh()
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to move player')
     } finally {
       setLoading(false)
     }
@@ -320,78 +266,40 @@ export default function LadderManagement({
                 {initialPositions.map((pos) => (
                   <tr key={pos.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                      {editingUserId === pos.user_id ? (
-                        <div className="flex items-center space-x-2">
-                          <span className="text-gray-500">#</span>
-                          <input
-                            type="number"
-                            min="1"
-                            max={initialPositions.length}
-                            value={editPosition}
-                            onChange={(e) => setEditPosition(e.target.value)}
-                            className="w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-900 dark:text-white"
-                            autoFocus
-                          />
-                        </div>
-                      ) : (
-                        `#${pos.position}`
-                      )}
+                      #{pos.position}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {pos.user.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                      {editingUserId === pos.user_id ? (
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => handleSavePosition(pos.user_id, pos.user.name, pos.position)}
-                            disabled={loading}
-                            className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 disabled:opacity-50"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={handleCancelEdit}
-                            disabled={loading}
-                            className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 disabled:opacity-50"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => handleMoveUp(pos.user_id, pos.user.name, pos.position)}
-                            disabled={loading || pos.position === 1}
-                            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                            title="Move up"
-                          >
-                            <ChevronUp className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleMoveDown(pos.user_id, pos.user.name, pos.position)}
-                            disabled={loading || pos.position === initialPositions.length}
-                            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                            title="Move down"
-                          >
-                            <ChevronDown className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleEditPosition(pos.user_id, pos.position)}
-                            disabled={loading}
-                            className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 disabled:opacity-50 text-sm"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleRemovePlayer(pos.user_id, pos.user.name)}
-                            disabled={loading}
-                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50 text-sm"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleMoveUp(pos.user_id, pos.user.name, pos.position)}
+                          disabled={loading || pos.position === 1}
+                          className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          title="Move up"
+                          aria-label={`Move ${pos.user.name} up`}
+                        >
+                          <ChevronUp className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleMoveDown(pos.user_id, pos.user.name, pos.position)}
+                          disabled={loading || pos.position === initialPositions.length}
+                          className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-blue-600 dark:text-blue-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          title="Move down"
+                          aria-label={`Move ${pos.user.name} down`}
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleRemovePlayer(pos.user_id, pos.user.name)}
+                          disabled={loading}
+                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50 text-sm"
+                          aria-label={`Remove ${pos.user.name} from ladder`}
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
