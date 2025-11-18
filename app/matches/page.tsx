@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Navigation from '@/components/Navigation'
 import MatchesList from '@/components/matches/MatchesList'
 import MatchesHeader from '@/components/matches/MatchesHeader'
+import ChallengeCard from '@/components/challenges/ChallengeCard'
 import { Award, Trophy, TrendingUp, AlertCircle } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -128,9 +129,9 @@ export default async function MatchesPage() {
     .eq('season_id', activeSeason.id)
     .order('match_date', { ascending: false })
 
-  // Calculate stats (only for user's own matches)
+  // Calculate stats (only for user's own matches that are completed)
   const userMatches = matches?.filter(m =>
-    m.player1_id === user.id || m.player2_id === user.id
+    (m.player1_id === user.id || m.player2_id === user.id) && m.winner_id !== null
   ) || []
   const totalMatches = userMatches.length
   const wins = userMatches.filter(m => m.winner_id === user.id).length
@@ -233,38 +234,10 @@ export default async function MatchesPage() {
                     ? 'ring-2 ring-primary-200 dark:ring-primary-800 rounded-lg'
                     : ''
                 }>
-                  <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2 flex-wrap">
-                          <h4 className="text-lg font-medium text-gray-900 dark:text-white">
-                            {challenge.challenger.name} vs {challenge.challenged.name}
-                          </h4>
-                          {(challenge.challenger_id === user.id || challenge.challenged_id === user.id) && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300 rounded-full">
-                              Your Challenge
-                            </span>
-                          )}
-                          {challenge.is_wildcard && (
-                            <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400 rounded-full">
-                              Wildcard
-                            </span>
-                          )}
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            challenge.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-                              : 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                          }`}>
-                            {challenge.status.charAt(0).toUpperCase() + challenge.status.slice(1)}
-                          </span>
-                        </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                          <p>Proposed: {new Date(challenge.proposed_date).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}</p>
-                          <p>Location: {challenge.proposed_location}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <ChallengeCard
+                    challenge={challenge as any}
+                    currentUserId={user.id}
+                  />
                 </div>
               ))}
             </div>

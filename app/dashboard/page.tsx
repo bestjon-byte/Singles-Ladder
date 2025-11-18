@@ -117,6 +117,14 @@ export default async function DashboardPage() {
   const pendingChallenges = pendingChallengesData?.length || 0
   const challengesToAccept = pendingChallengesData?.filter(c => c.challenged_id === user.id) || []
 
+  // Get all active challenges for the season (to show who is locked)
+  const { data: allActiveChallenges } = season ? await supabase
+    .from('challenges')
+    .select('id, challenger_id, challenged_id, status')
+    .eq('season_id', season.id)
+    .in('status', ['pending', 'accepted'])
+    : { data: [] }
+
   const winRate = totalMatches ? Math.round(((wins || 0) / totalMatches) * 100) : 0
 
   return (
@@ -182,6 +190,7 @@ export default async function DashboardPage() {
           currentUserPosition={ladderEntry?.position || null}
           seasonId={season?.id || ''}
           availableWildcards={availableWildcards}
+          activeChallenges={allActiveChallenges || []}
         />
       </div>
     </div>
