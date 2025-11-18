@@ -39,6 +39,14 @@ A mobile-optimized web application for managing tennis club ladders independentl
    FROM_EMAIL=noreply@yourdomain.com
    ```
 
+   **Important for Email Notifications:**
+   - By default, Resend only allows sending emails to your verified email address
+   - To send emails to all users, you must verify a domain:
+     1. Go to [https://resend.com/domains](https://resend.com/domains)
+     2. Add and verify your domain (DNS records required)
+     3. Update `FROM_EMAIL` to use your verified domain (e.g., `noreply@yourdomain.com`)
+   - See the Resend documentation for detailed domain verification steps
+
 4. **Set up the database**
 
    Run the migrations in Supabase:

@@ -49,13 +49,20 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_APP_URL=https://singles-ladder.vercel.app
 ```
 
-### Email Service (To be configured - Phase 4)
+### Email Service (Resend - Phase 4)
 
 ```bash
-# Resend API (not yet configured)
-RESEND_API_KEY=
-FROM_EMAIL=noreply@tennisladder.com
+# Resend API
+RESEND_API_KEY=your-resend-api-key
+FROM_EMAIL=noreply@yourdomain.com
 ```
+
+**Important:** To send emails to all users (not just test mode):
+1. Verify a domain at https://resend.com/domains
+2. Update `FROM_EMAIL` to use your verified domain
+3. Without domain verification, emails only send to your verified email address
+
+**Current Status:** API configured, but domain verification required for production use
 
 ---
 
