@@ -15,6 +15,12 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 // Default sender email - using verified domain jlbweb.co.uk
 const FROM_EMAIL = process.env.FROM_EMAIL || 'Tennis Ladder <ladder@jlbweb.co.uk>'
 
+// Log configuration on module load
+console.log('Email service configuration:', {
+  fromEmail: FROM_EMAIL,
+  resendConfigured: !!process.env.RESEND_API_KEY
+})
+
 interface SendEmailParams {
   to: string
   subject: string
@@ -32,6 +38,16 @@ async function sendEmail({ to, subject, html }: SendEmailParams): Promise<{ succ
   }
 
   try {
+    // Log the email request details (without HTML content to keep logs clean)
+    console.log('Sending email with Resend:', {
+      from: FROM_EMAIL,
+      to,
+      subject,
+      apiKeyConfigured: !!process.env.RESEND_API_KEY,
+      apiKeyPrefix: process.env.RESEND_API_KEY?.substring(0, 7) + '...',
+      htmlLength: html.length
+    })
+
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to,
