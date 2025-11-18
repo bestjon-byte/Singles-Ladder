@@ -6,6 +6,8 @@ import {
   sendChallengeRejectedEmail,
   sendChallengeWithdrawnEmail,
   sendMatchScoreSubmittedEmail,
+  sendScoreDisputedEmail,
+  sendNewUserSignupEmail,
 } from './email'
 
 // Use service role client to bypass RLS for system operations
@@ -354,5 +356,187 @@ export async function notifyMatchScoreSubmitted(matchId: string): Promise<void> 
     }
   } catch (error) {
     console.error('Error in notifyMatchScoreSubmitted:', error)
+  }
+}
+
+/**
+ * Notify both players and all admins when a match score is disputed
+ */
+export async function notifyScoreDisputed(matchId: string): Promise<void> {
+  try {
+    const supabase = getServiceClient()
+
+    // Fetch match details with user information
+    const { data: match, error } = await supabase
+      .from('matches')
+      .select(`
+        *,
+        player1:users!matches_player1_id_fkey(id, name, email, email_notifications_enabled),
+        player2:users!matches_player2_id_fkey(id, name, email, email_notifications_enabled),
+        disputed_by:users!matches_disputed_by_user_id_fkey(id, name)
+      `)
+      .eq('id', matchId)
+      .single()
+
+    if (error || !match) {
+      console.error('Error fetching match for dispute notification:', error)
+      return
+    }
+
+    const player1 = match.player1 as any
+    const player2 = match.player2 as any
+    const disputedBy = match.disputed_by as any
+
+    // Format scores
+    const set1Score = `${match.set1_player1_score}-${match.set1_player2_score}`
+    const set2Score = `${match.set2_player1_score}-${match.set2_player2_score}`
+    const set3Score = match.set3_player1_score !== null && match.set3_player2_score !== null
+      ? `${match.set3_player1_score}-${match.set3_player2_score}`
+      : undefined
+
+    // Notify player 1
+    await createNotification({
+      userId: player1.id,
+      type: 'score_disputed',
+      title: 'Match score disputed',
+      message: `${disputedBy.name} has disputed the score for your match against ${player2.name}.`,
+      relatedMatchId: matchId,
+      sendEmail: player1.email_notifications_enabled,
+    })
+
+    if (player1.email_notifications_enabled) {
+      await sendScoreDisputedEmail({
+        recipientEmail: player1.email,
+        recipientName: player1.name,
+        opponentName: player2.name,
+        disputedByName: disputedBy.name,
+        set1Score,
+        set2Score,
+        set3Score,
+        matchId,
+      })
+    }
+
+    // Notify player 2
+    await createNotification({
+      userId: player2.id,
+      type: 'score_disputed',
+      title: 'Match score disputed',
+      message: `${disputedBy.name} has disputed the score for your match against ${player1.name}.`,
+      relatedMatchId: matchId,
+      sendEmail: player2.email_notifications_enabled,
+    })
+
+    if (player2.email_notifications_enabled) {
+      await sendScoreDisputedEmail({
+        recipientEmail: player2.email,
+        recipientName: player2.name,
+        opponentName: player1.name,
+        disputedByName: disputedBy.name,
+        set1Score,
+        set2Score,
+        set3Score,
+        matchId,
+      })
+    }
+
+    // Notify all admins
+    const { data: admins } = await supabase
+      .from('admins')
+      .select(`
+        id,
+        email,
+        user:users(id, name, email_notifications_enabled)
+      `)
+
+    if (admins && admins.length > 0) {
+      for (const admin of admins) {
+        const adminUser = admin.user as any
+
+        // Create in-app notification for admin (if they have a user account)
+        if (adminUser) {
+          await createNotification({
+            userId: adminUser.id,
+            type: 'score_disputed',
+            title: 'Match score disputed - Admin Review Required',
+            message: `${disputedBy.name} disputed the match between ${player1.name} and ${player2.name}.`,
+            relatedMatchId: matchId,
+            sendEmail: adminUser.email_notifications_enabled,
+          })
+        }
+
+        // Send email to admin (always send to admin email, regardless of user notification settings)
+        await sendScoreDisputedEmail({
+          recipientEmail: admin.email,
+          recipientName: adminUser?.name || 'Admin',
+          opponentName: `${player1.name} vs ${player2.name}`,
+          disputedByName: disputedBy.name,
+          set1Score,
+          set2Score,
+          set3Score,
+          matchId,
+        })
+      }
+    }
+  } catch (error) {
+    console.error('Error in notifyScoreDisputed:', error)
+  }
+}
+
+/**
+ * Notify all admins when a new user signs up
+ */
+export async function notifyNewUserSignup(userId: string): Promise<void> {
+  try {
+    const supabase = getServiceClient()
+
+    // Fetch new user details
+    const { data: newUser, error: userError } = await supabase
+      .from('users')
+      .select('id, name, email, whatsapp_number')
+      .eq('id', userId)
+      .single()
+
+    if (userError || !newUser) {
+      console.error('Error fetching new user for signup notification:', userError)
+      return
+    }
+
+    // Notify all admins
+    const { data: admins } = await supabase
+      .from('admins')
+      .select(`
+        id,
+        email,
+        user:users(id, name, email_notifications_enabled)
+      `)
+
+    if (admins && admins.length > 0) {
+      for (const admin of admins) {
+        const adminUser = admin.user as any
+
+        // Create in-app notification for admin (if they have a user account)
+        if (adminUser) {
+          await createNotification({
+            userId: adminUser.id,
+            type: 'challenge_received', // Reusing existing type as there's no signup type
+            title: 'New player signed up',
+            message: `${newUser.name} (${newUser.email}) has joined the ladder.`,
+            sendEmail: adminUser.email_notifications_enabled,
+          })
+        }
+
+        // Send email to admin (always send to admin email)
+        await sendNewUserSignupEmail({
+          adminEmail: admin.email,
+          adminName: adminUser?.name || 'Admin',
+          newUserName: newUser.name,
+          newUserEmail: newUser.email,
+          newUserWhatsapp: newUser.whatsapp_number || undefined,
+        })
+      }
+    }
+  } catch (error) {
+    console.error('Error in notifyNewUserSignup:', error)
   }
 }

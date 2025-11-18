@@ -54,8 +54,9 @@ export async function disputeMatchScore(matchId: string) {
       return { error: 'Failed to dispute match' }
     }
 
-    // TODO: Create notification for admin (Phase 4)
-    // TODO: Create notification for other player (Phase 4)
+    // Notify both players and all admins
+    const { notifyScoreDisputed } = await import('@/lib/services/notifications')
+    await notifyScoreDisputed(matchId)
 
     revalidatePath('/matches')
     revalidatePath('/admin/disputes')
