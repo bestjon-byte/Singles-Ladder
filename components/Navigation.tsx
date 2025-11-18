@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Menu, X, Trophy, Target, Award, User, Settings } from 'lucide-react'
+import { Menu, X, Trophy, Target, Award, User, Settings, BookOpen } from 'lucide-react'
 import { useState } from 'react'
 import { NotificationBell } from './notifications/NotificationBell'
 
@@ -75,6 +75,15 @@ export default function Navigation({ isAdmin = false, userName }: NavigationProp
               )
             })}
 
+            {/* User Guide Link */}
+            <Link
+              href="/guide"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-500 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-300"
+              title="User Guide"
+            >
+              <BookOpen className="w-4 h-4" />
+            </Link>
+
             {/* Notification Bell */}
             <div className="ml-2">
               <NotificationBell />
@@ -142,6 +151,16 @@ export default function Navigation({ isAdmin = false, userName }: NavigationProp
                 </Link>
               )
             })}
+
+            {/* User Guide Link for Mobile */}
+            <Link
+              href="/guide"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-gray-500 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
+            >
+              <BookOpen className="w-5 h-5" />
+              User Guide
+            </Link>
 
             <form action="/auth/signout" method="post" className="pt-2">
               <button
