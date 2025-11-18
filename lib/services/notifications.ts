@@ -97,8 +97,16 @@ export async function notifyChallengeReceived(challengeId: string): Promise<void
     })
 
     // Send email if enabled
+    console.log('Email notification check:', {
+      challengedEmail: challenged.email,
+      challengedName: challenged.name,
+      emailNotificationsEnabled: challenged.email_notifications_enabled,
+      willSendEmail: challenged.email_notifications_enabled === true
+    })
+
     if (challenged.email_notifications_enabled) {
-      await sendChallengeReceivedEmail({
+      console.log('Attempting to send challenge received email to:', challenged.email)
+      const emailResult = await sendChallengeReceivedEmail({
         recipientEmail: challenged.email,
         recipientName: challenged.name,
         challengerName: challenger.name,
@@ -107,6 +115,9 @@ export async function notifyChallengeReceived(challengeId: string): Promise<void
         challengeId,
         isWildcard: challenge.is_wildcard,
       })
+      console.log('Email send result:', emailResult)
+    } else {
+      console.log('Email NOT sent - email_notifications_enabled is:', challenged.email_notifications_enabled)
     }
   } catch (error) {
     console.error('Error in notifyChallengeReceived:', error)
