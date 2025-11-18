@@ -41,6 +41,22 @@ interface MatchScoreSubmittedEmailProps extends BaseEmailProps {
   matchId: string
 }
 
+interface ScoreDisputedEmailProps extends BaseEmailProps {
+  opponentName: string
+  disputedByName: string
+  set1Score: string
+  set2Score: string
+  set3Score?: string
+  matchId: string
+}
+
+interface NewUserSignupEmailProps {
+  adminName: string
+  newUserName: string
+  newUserEmail: string
+  newUserWhatsapp?: string
+}
+
 // Base email template with consistent styling
 const emailWrapper = (content: string) => `
 <!DOCTYPE html>
@@ -335,6 +351,99 @@ export function generateMatchScoreSubmittedEmail(props: MatchScoreSubmittedEmail
 
   return {
     subject: isWinner ? `🏆 You won against ${props.opponentName}!` : `Match result: ${props.opponentName} vs You`,
+    html: emailWrapper(content)
+  }
+}
+
+export function generateScoreDisputedEmail(props: ScoreDisputedEmailProps): { subject: string; html: string } {
+  const content = `
+    <div class="header">
+      <div class="emoji">⚠️</div>
+      <h1>Match Score Disputed</h1>
+    </div>
+    <div class="content">
+      <p>Hi <strong>${props.recipientName}</strong>,</p>
+      <p><strong>${props.disputedByName}</strong> has disputed the score for your match against <strong>${props.opponentName}</strong>.</p>
+
+      <div class="info-box">
+        <p style="margin-bottom: 10px;"><strong>Disputed Match Score:</strong></p>
+        <table class="score-table">
+          <tr>
+            <th>Set</th>
+            <th>Score</th>
+          </tr>
+          <tr>
+            <td>Set 1</td>
+            <td>${props.set1Score}</td>
+          </tr>
+          <tr>
+            <td>Set 2</td>
+            <td>${props.set2Score}</td>
+          </tr>
+          ${props.set3Score ? `
+          <tr>
+            <td>Set 3</td>
+            <td>${props.set3Score}</td>
+          </tr>
+          ` : ''}
+        </table>
+      </div>
+
+      <p><strong>What happens next?</strong></p>
+      <ul>
+        <li>The match result has been flagged for review</li>
+        <li>An admin will review the dispute and make a decision</li>
+        <li>You'll be notified once the dispute is resolved</li>
+      </ul>
+
+      <div style="text-align: center; margin-top: 30px;">
+        <a href="${APP_URL}/matches" class="button">View Match Details</a>
+      </div>
+
+      <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
+        If you have any questions, please contact the ladder administrator.
+      </p>
+    </div>
+  `
+
+  return {
+    subject: `⚠️ Match score disputed: ${props.opponentName}`,
+    html: emailWrapper(content)
+  }
+}
+
+export function generateNewUserSignupEmail(props: NewUserSignupEmailProps): { subject: string; html: string } {
+  const content = `
+    <div class="header">
+      <div class="emoji">👤</div>
+      <h1>New Player Signed Up</h1>
+    </div>
+    <div class="content">
+      <p>Hi <strong>${props.adminName}</strong>,</p>
+      <p>A new player has joined the Tennis Singles Ladder!</p>
+
+      <div class="info-box">
+        <p><strong>Player Details:</strong></p>
+        <p><strong>Name:</strong> ${props.newUserName}</p>
+        <p><strong>Email:</strong> ${props.newUserEmail}</p>
+        ${props.newUserWhatsapp ? `<p style="margin-bottom: 0;"><strong>WhatsApp:</strong> ${props.newUserWhatsapp}</p>` : '<p style="margin-bottom: 0;">No WhatsApp number provided</p>'}
+      </div>
+
+      <p><strong>Next steps:</strong></p>
+      <ul>
+        <li>The new player will need to be added to the ladder by an admin</li>
+        <li>You can add them from the Ladder Management page</li>
+      </ul>
+
+      <div style="text-align: center; margin-top: 30px;">
+        <a href="${APP_URL}/admin/ladder" class="button">Manage Ladder</a>
+        <a href="${APP_URL}/dashboard" class="button button-secondary">View Dashboard</a>
+      </div>
+    </div>
+  `
+
+  return {
+    subject: `👤 New player signup: ${props.newUserName}`,
     html: emailWrapper(content)
   }
 }

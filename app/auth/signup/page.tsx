@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { notifyAdminsOfNewUser } from '@/lib/actions/auth'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Mail, Lock, User, Phone, ArrowLeft, UserPlus } from 'lucide-react'
@@ -63,6 +64,12 @@ export default function SignupPage() {
 
       if (authData.user) {
         // Profile is automatically created by database trigger
+        // Notify admins of new user signup (don't block on this)
+        notifyAdminsOfNewUser(authData.user.id).catch((err) => {
+          console.error('Failed to notify admins:', err)
+          // Don't show error to user, just log it
+        })
+
         // Redirect to dashboard
         router.push('/dashboard?welcome=true')
         router.refresh()

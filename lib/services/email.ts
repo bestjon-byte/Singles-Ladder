@@ -5,6 +5,8 @@ import {
   generateChallengeRejectedEmail,
   generateChallengeWithdrawnEmail,
   generateMatchScoreSubmittedEmail,
+  generateScoreDisputedEmail,
+  generateNewUserSignupEmail,
 } from '@/lib/templates/email-html'
 
 // Initialize Resend client
@@ -175,6 +177,60 @@ export async function sendMatchScoreSubmittedEmail(params: {
 
   return sendEmail({
     to: params.recipientEmail,
+    subject,
+    html,
+  })
+}
+
+/**
+ * Send score disputed notification email
+ */
+export async function sendScoreDisputedEmail(params: {
+  recipientEmail: string
+  recipientName: string
+  opponentName: string
+  disputedByName: string
+  set1Score: string
+  set2Score: string
+  set3Score?: string
+  matchId: string
+}): Promise<{ success: boolean; error?: string }> {
+  const { subject, html } = generateScoreDisputedEmail({
+    recipientName: params.recipientName,
+    opponentName: params.opponentName,
+    disputedByName: params.disputedByName,
+    set1Score: params.set1Score,
+    set2Score: params.set2Score,
+    set3Score: params.set3Score,
+    matchId: params.matchId,
+  })
+
+  return sendEmail({
+    to: params.recipientEmail,
+    subject,
+    html,
+  })
+}
+
+/**
+ * Send new user signup notification email to admin
+ */
+export async function sendNewUserSignupEmail(params: {
+  adminEmail: string
+  adminName: string
+  newUserName: string
+  newUserEmail: string
+  newUserWhatsapp?: string
+}): Promise<{ success: boolean; error?: string }> {
+  const { subject, html } = generateNewUserSignupEmail({
+    adminName: params.adminName,
+    newUserName: params.newUserName,
+    newUserEmail: params.newUserEmail,
+    newUserWhatsapp: params.newUserWhatsapp,
+  })
+
+  return sendEmail({
+    to: params.adminEmail,
     subject,
     html,
   })
