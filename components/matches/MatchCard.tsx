@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { submitMatchScore } from '@/lib/actions/matches'
-import { ChevronDown, ChevronUp, MapPin, Calendar, Trophy, Star, AlertTriangle } from 'lucide-react'
+import { ChevronDown, ChevronUp, MapPin, Calendar, Trophy, Star, AlertTriangle, User } from 'lucide-react'
 
 interface Match {
   id: string
@@ -151,10 +151,15 @@ export default function MatchCard({ match, currentUserId }: MatchCardProps) {
 
   const isPlayer1 = match.player1.id === currentUserId
   const isCompleted = !!match.winner_id
-  const canDispute = isCompleted && !match.is_disputed && (match.player1.id === currentUserId || match.player2.id === currentUserId)
+  const isUserMatch = match.player1.id === currentUserId || match.player2.id === currentUserId
+  const canDispute = isCompleted && !match.is_disputed && isUserMatch
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all hover:shadow-md">
+    <div className={`bg-white dark:bg-gray-800 rounded-lg border overflow-hidden transition-all hover:shadow-md ${
+      isUserMatch
+        ? 'border-primary-500 dark:border-primary-400 shadow-sm ring-2 ring-primary-100 dark:ring-primary-900/30'
+        : 'border-gray-200 dark:border-gray-700'
+    }`}>
       {/* Collapsed View */}
       <div
         className="p-4 cursor-pointer select-none"
@@ -162,10 +167,16 @@ export default function MatchCard({ match, currentUserId }: MatchCardProps) {
       >
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-1">
+            <div className="flex items-center gap-3 mb-1 flex-wrap">
               <h4 className="text-base font-semibold text-gray-900 dark:text-white truncate">
                 {match.player1.name} vs {match.player2.name}
               </h4>
+              {isUserMatch && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300 rounded-full flex-shrink-0">
+                  <User className="w-3 h-3" />
+                  Your Match
+                </span>
+              )}
               {match.challenge?.is_wildcard && (
                 <Star className="w-4 h-4 text-purple-500 flex-shrink-0" />
               )}

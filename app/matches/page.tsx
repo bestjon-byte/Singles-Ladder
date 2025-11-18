@@ -98,7 +98,7 @@ export default async function MatchesPage() {
     ? (activeSeason.wildcards_per_player - (wildcardsUsed?.length || 0))
     : 0
 
-  // Get pending challenges
+  // Get pending challenges (show all challenges)
   const { data: pendingChallengesData } = await supabase
     .from('challenges')
     .select(`
@@ -106,14 +106,14 @@ export default async function MatchesPage() {
       challenger:users!challenges_challenger_id_fkey(id, name),
       challenged:users!challenges_challenged_id_fkey(id, name)
     `)
-    .or(`challenger_id.eq.${user.id},challenged_id.eq.${user.id}`)
+    .eq('season_id', activeSeason.id)
     .in('status', ['pending', 'accepted'])
 
   const challengesToAccept = pendingChallengesData?.filter(c =>
     c.challenged_id === user.id && c.status === 'pending'
   ) || []
 
-  // Get all matches for this user
+  // Get all matches (show all matches to all users)
   const { data: matches } = await supabase
     .from('matches')
     .select(`
@@ -126,12 +126,14 @@ export default async function MatchesPage() {
       disputed_by_user_id
     `)
     .eq('season_id', activeSeason.id)
-    .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
     .order('match_date', { ascending: false })
 
-  // Calculate stats
-  const totalMatches = matches?.length || 0
-  const wins = matches?.filter(m => m.winner_id === user.id).length || 0
+  // Calculate stats (only for user's own matches)
+  const userMatches = matches?.filter(m =>
+    m.player1_id === user.id || m.player2_id === user.id
+  ) || []
+  const totalMatches = userMatches.length
+  const wins = userMatches.filter(m => m.winner_id === user.id).length
   const losses = totalMatches - wins
   const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0
 
@@ -217,6 +219,57 @@ export default async function MatchesPage() {
             </p>
           </div>
         </div>
+
+        {/* All Challenges Section */}
+        {pendingChallengesData && pendingChallengesData.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-heading font-bold text-gray-900 dark:text-white mb-4">
+              All Active Challenges
+            </h2>
+            <div className="space-y-4">
+              {pendingChallengesData.map((challenge) => (
+                <div key={challenge.id} className={
+                  challenge.challenger_id === user.id || challenge.challenged_id === user.id
+                    ? 'ring-2 ring-primary-200 dark:ring-primary-800 rounded-lg'
+                    : ''
+                }>
+                  <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2 flex-wrap">
+                          <h4 className="text-lg font-medium text-gray-900 dark:text-white">
+                            {challenge.challenger.name} vs {challenge.challenged.name}
+                          </h4>
+                          {(challenge.challenger_id === user.id || challenge.challenged_id === user.id) && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300 rounded-full">
+                              Your Challenge
+                            </span>
+                          )}
+                          {challenge.is_wildcard && (
+                            <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400 rounded-full">
+                              Wildcard
+                            </span>
+                          )}
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            challenge.status === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                              : 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                          }`}>
+                            {challenge.status.charAt(0).toUpperCase() + challenge.status.slice(1)}
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                          <p>Proposed: {new Date(challenge.proposed_date).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                          <p>Location: {challenge.proposed_location}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Matches List */}
         <MatchesList
