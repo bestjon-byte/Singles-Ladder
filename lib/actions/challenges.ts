@@ -322,6 +322,20 @@ export async function rejectChallenge(challengeId: string) {
       return { error: 'Failed to reject challenge' }
     }
 
+    // Refund wildcard if this was a wildcard challenge
+    if (challenge.is_wildcard) {
+      const { error: wildcardError } = await supabase
+        .from('wildcard_usage')
+        .delete()
+        .eq('challenge_id', challengeId)
+        .eq('user_id', challenge.challenger_id)
+
+      if (wildcardError) {
+        console.error('Error refunding wildcard:', wildcardError)
+        // Don't fail the rejection if wildcard refund fails
+      }
+    }
+
     // Send notification to challenger
     try {
       const { notifyChallengeRejected } = await import('@/lib/services/notifications')
@@ -384,6 +398,20 @@ export async function withdrawChallenge(challengeId: string) {
     if (updateError) {
       console.error('Error withdrawing challenge:', updateError)
       return { error: 'Failed to withdraw challenge' }
+    }
+
+    // Refund wildcard if this was a wildcard challenge
+    if (challenge.is_wildcard) {
+      const { error: wildcardError } = await supabase
+        .from('wildcard_usage')
+        .delete()
+        .eq('challenge_id', challengeId)
+        .eq('user_id', user.id)
+
+      if (wildcardError) {
+        console.error('Error refunding wildcard:', wildcardError)
+        // Don't fail the withdrawal if wildcard refund fails
+      }
     }
 
     // Send notification to challenged player
