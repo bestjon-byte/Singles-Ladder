@@ -1,7 +1,7 @@
 import { Challenge } from '@/types'
 import { formatDate } from 'date-fns'
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://singles-ladder.vercel.app'
 
 /**
  * Generate a formatted WhatsApp message for a challenge
