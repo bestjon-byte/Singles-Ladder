@@ -49,13 +49,18 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_APP_URL=https://singles-ladder.vercel.app
 ```
 
-### Email Service (To be configured - Phase 4)
+### Email Service (Resend - Phase 4)
 
 ```bash
-# Resend API (not yet configured)
-RESEND_API_KEY=
-FROM_EMAIL=noreply@tennisladder.com
+# Resend API
+RESEND_API_KEY=your-resend-api-key
+FROM_EMAIL=ladder@jlbweb.co.uk
 ```
+
+**Domain Configuration:**
+- Verified domain: `jlbweb.co.uk`
+- Sender email: `ladder@jlbweb.co.uk`
+- Status: ✅ Domain verified and ready for production use
 
 ---
 

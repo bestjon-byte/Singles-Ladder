@@ -12,8 +12,8 @@ import {
 // Initialize Resend client
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// Default sender email
-const FROM_EMAIL = process.env.FROM_EMAIL || 'Tennis Ladder <noreply@tennisladder.com>'
+// Default sender email - using verified domain jlbweb.co.uk
+const FROM_EMAIL = process.env.FROM_EMAIL || 'Tennis Ladder <ladder@jlbweb.co.uk>'
 
 interface SendEmailParams {
   to: string
@@ -41,6 +41,24 @@ async function sendEmail({ to, subject, html }: SendEmailParams): Promise<{ succ
 
     if (error) {
       console.error('Error sending email:', error)
+
+      // Check for domain verification error
+      if (error.name === 'validation_error' && error.message?.includes('verify a domain')) {
+        console.error('╔════════════════════════════════════════════════════════════════╗')
+        console.error('║ RESEND DOMAIN VERIFICATION REQUIRED                            ║')
+        console.error('╠════════════════════════════════════════════════════════════════╣')
+        console.error('║ Your Resend account is in test mode. To send emails to        ║')
+        console.error('║ other users, you need to:                                     ║')
+        console.error('║                                                                ║')
+        console.error('║ 1. Go to https://resend.com/domains                           ║')
+        console.error('║ 2. Add and verify a domain (e.g., yourdomain.com)             ║')
+        console.error('║ 3. Update FROM_EMAIL in .env to use the verified domain       ║')
+        console.error('║    Example: FROM_EMAIL=noreply@yourdomain.com                 ║')
+        console.error('║                                                                ║')
+        console.error('║ Until then, emails will only be sent to your verified email.  ║')
+        console.error('╚════════════════════════════════════════════════════════════════╝')
+      }
+
       return { success: false, error: error.message }
     }
 
