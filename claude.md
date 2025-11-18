@@ -54,15 +54,13 @@ NEXT_PUBLIC_APP_URL=https://singles-ladder.vercel.app
 ```bash
 # Resend API
 RESEND_API_KEY=your-resend-api-key
-FROM_EMAIL=noreply@yourdomain.com
+FROM_EMAIL=ladder@jlbweb.co.uk
 ```
 
-**Important:** To send emails to all users (not just test mode):
-1. Verify a domain at https://resend.com/domains
-2. Update `FROM_EMAIL` to use your verified domain
-3. Without domain verification, emails only send to your verified email address
-
-**Current Status:** API configured, but domain verification required for production use
+**Domain Configuration:**
+- Verified domain: `jlbweb.co.uk`
+- Sender email: `ladder@jlbweb.co.uk`
+- Status: ✅ Domain verified and ready for production use
 
 ---
 

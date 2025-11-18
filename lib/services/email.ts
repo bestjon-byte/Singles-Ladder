@@ -12,8 +12,8 @@ import {
 // Initialize Resend client
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// Default sender email
-const FROM_EMAIL = process.env.FROM_EMAIL || 'Tennis Ladder <noreply@tennisladder.com>'
+// Default sender email - using verified domain jlbweb.co.uk
+const FROM_EMAIL = process.env.FROM_EMAIL || 'Tennis Ladder <ladder@jlbweb.co.uk>'
 
 interface SendEmailParams {
   to: string

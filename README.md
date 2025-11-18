@@ -32,20 +32,17 @@ A mobile-optimized web application for managing tennis club ladders independentl
 
 3. **Set up environment variables**
 
-   The `.env.local` file is already configured with your Supabase credentials. To add Resend later:
+   The `.env.local` file is already configured with your Supabase credentials. Add Resend configuration:
    ```bash
-   # Add these to .env.local when ready:
+   # Add these to .env.local:
    RESEND_API_KEY=your-resend-api-key
-   FROM_EMAIL=noreply@yourdomain.com
+   FROM_EMAIL=ladder@jlbweb.co.uk
    ```
 
-   **Important for Email Notifications:**
-   - By default, Resend only allows sending emails to your verified email address
-   - To send emails to all users, you must verify a domain:
-     1. Go to [https://resend.com/domains](https://resend.com/domains)
-     2. Add and verify your domain (DNS records required)
-     3. Update `FROM_EMAIL` to use your verified domain (e.g., `noreply@yourdomain.com`)
-   - See the Resend documentation for detailed domain verification steps
+   **Email Configuration:**
+   - Domain `jlbweb.co.uk` is verified with Resend
+   - Emails will be sent from `ladder@jlbweb.co.uk`
+   - Get your API key from [https://resend.com/api-keys](https://resend.com/api-keys)
 
 4. **Set up the database**
 
@@ -149,7 +146,8 @@ See `supabase/README.md` for detailed database setup and migration instructions.
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
-   - (Optional) `RESEND_API_KEY` and `FROM_EMAIL`
+   - `RESEND_API_KEY` (get from https://resend.com/api-keys)
+   - `FROM_EMAIL=ladder@jlbweb.co.uk`
 4. Deploy!
 
 ## Documentation
