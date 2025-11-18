@@ -1,27 +1,43 @@
-# Tennis Singles Ladder 2
+# Tennis Singles Ladder
 
-A mobile-optimized web application for managing tennis club ladders independently, featuring player challenges, automated ladder updates, match scheduling, playoffs, and comprehensive statistics tracking.
+A comprehensive web application for managing tennis club ladder competitions. Players can challenge opponents, schedule matches, submit scores, and track statistics across seasons.
+
+[![Production](https://img.shields.io/badge/live-production-success)](https://singles-ladder.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green)](https://supabase.com/)
+
+## Features
+
+- **Ladder System**: Dynamic player rankings with automated position updates
+- **Challenge Management**: Players challenge opponents with wildcard options
+- **Match Scoring**: Submit scores with automatic winner calculation
+- **Notifications**: Email and in-app notifications for all events
+- **Admin Panel**: Comprehensive tools for managing seasons, users, and disputes
+- **Statistics**: Track performance, win streaks, and head-to-head records
+- **Mobile Optimized**: Fully responsive design for on-court score submission
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS
+- **Frontend**: Next.js 15.5.6, TypeScript, Tailwind CSS
 - **Backend**: Supabase (PostgreSQL + Auth)
+- **Email**: Resend API
 - **Hosting**: Vercel
-- **Email**: Resend (to be configured)
+- **UI Components**: Radix UI, Lucide React
 
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 
-- Node.js 18+ installed
-- A Supabase account and project
+- Node.js 18+
+- A Supabase account
 - (Optional) Resend account for email notifications
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/bestjon-byte/Singles-Ladder.git
    cd Singles-Ladder
    ```
 
@@ -32,29 +48,26 @@ A mobile-optimized web application for managing tennis club ladders independentl
 
 3. **Set up environment variables**
 
-   The `.env.local` file is already configured with your Supabase credentials. Add Resend configuration:
+   Create a `.env.local` file:
    ```bash
-   # Add these to .env.local:
-   RESEND_API_KEY=your-resend-api-key
-   FROM_EMAIL=ladder@jlbweb.co.uk
-   ```
+   # Supabase
+   NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-   **Email Configuration:**
-   - Domain `jlbweb.co.uk` is verified with Resend
-   - Emails will be sent from `ladder@jlbweb.co.uk`
-   - Get your API key from [https://resend.com/api-keys](https://resend.com/api-keys)
+   # Email (Resend)
+   RESEND_API_KEY=your-resend-api-key
+   FROM_EMAIL=your-verified-email@yourdomain.com
+
+   # Application URL
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   ```
 
 4. **Set up the database**
 
-   Run the migrations in Supabase:
-   - Go to your Supabase project dashboard: https://supabase.com/dashboard/project/cgvertskdkebxukrehyn
-   - Navigate to SQL Editor
-   - Run each migration file in order:
-     1. `supabase/migrations/20250116_001_initial_schema.sql`
-     2. `supabase/migrations/20250116_002_rls_policies.sql`
-     3. `supabase/migrations/20250116_003_functions.sql`
-
-   See `supabase/README.md` for detailed instructions.
+   Apply migrations in Supabase Dashboard → SQL Editor:
+   - Run all files in `supabase/migrations/` in order
+   - See `supabase/README.md` for detailed instructions
 
 5. **Run the development server**
    ```bash
@@ -66,99 +79,146 @@ A mobile-optimized web application for managing tennis club ladders independentl
 ## Project Structure
 
 ```
-singles-ladder/
-├── app/                    # Next.js App Router
-│   ├── auth/              # Authentication pages (login, signup, reset)
-│   ├── dashboard/         # Main app dashboard
-│   ├── admin/             # Admin panel (coming soon)
-│   └── api/               # API routes (coming soon)
-├── components/            # React components
-├── lib/                   # Utility functions and configurations
-│   ├── supabase/         # Supabase client setup
-│   └── utils/            # Helper functions
-├── hooks/                 # Custom React hooks
-├── types/                 # TypeScript type definitions
-└── supabase/             # Database migrations
-    └── migrations/        # SQL migration files
+Singles-Ladder/
+├── app/                   # Next.js App Router pages
+│   ├── auth/             # Authentication pages
+│   ├── dashboard/        # Main dashboard (ladder view)
+│   ├── challenges/       # Challenge management
+│   ├── matches/          # Match viewing/scoring
+│   ├── admin/            # Admin panel
+│   └── ...
+├── components/           # React components
+│   ├── admin/           # Admin-specific components
+│   ├── challenges/      # Challenge components
+│   ├── ladder/          # Ladder display
+│   ├── matches/         # Match components
+│   └── notifications/   # Notification system
+├── lib/
+│   ├── actions/         # Server Actions
+│   ├── services/        # Business logic
+│   ├── supabase/        # Database clients
+│   └── utils/           # Utilities
+├── supabase/
+│   └── migrations/      # Database migrations
+└── types/               # TypeScript types
 ```
 
-## Features
+## How It Works
 
-### Phase 1: Core Foundation ✅
-- [x] User authentication (signup, login, password reset)
-- [x] Database schema
-- [x] Basic project structure
-- [ ] Admin panel basics
-- [ ] Season management
-- [ ] Ladder display
+### For Players
 
-### Phase 2-7: Coming Soon
-- Challenge system with negotiation
-- Match scoring and automated ladder updates
-- Email and WhatsApp notifications
-- Playoff generation
-- Comprehensive statistics
-- Mobile PWA optimization
+1. **Join the ladder**: Sign up and wait for admin to add you to the ladder
+2. **Challenge opponents**: Challenge players up to 2 positions above you
+3. **Use wildcards**: Challenge anyone above you (limited per season)
+4. **Schedule matches**: Coordinate with your opponent
+5. **Submit scores**: Either player can submit the match result
+6. **Track progress**: View your statistics and position history
 
-See `PROJECT_PLAN.md` for the complete implementation roadmap.
+### For Admins
 
-## Initial Setup Steps
+1. **Manage seasons**: Create and configure competitive seasons
+2. **Manage ladder**: Add/remove players, adjust positions
+3. **Resolve disputes**: Review and correct disputed match scores
+4. **Monitor activity**: View all challenges, matches, and user stats
 
-### 1. Create Your First Admin
+## Key Features Explained
 
-After running the migrations, create an admin user:
+### Ladder System
+- Players ranked 1 (top) to N (bottom)
+- Winner of challenge match takes loser's position
+- All players between shift down by one
+- Complete position history tracked
 
-```sql
--- First, sign up through the app at http://localhost:3000/auth/signup
--- Then run this in Supabase SQL Editor, replacing with your details:
+### Wildcard Challenges
+- Each player gets 2 wildcards per season (configurable)
+- Use wildcard to challenge any player above you
+- Wildcards refunded if challenge is rejected
+- Consumed only when match is completed
 
-INSERT INTO admins (email, user_id)
-VALUES ('your-email@example.com', '<your-user-id-from-auth-users>');
-```
+### Notifications
+- **In-app**: Bell icon with unread count, full notification center
+- **Email**: HTML formatted emails via Resend
+- **WhatsApp**: Share challenge details (manual sharing)
 
-### 2. Create Your First Season
+### Dispute Resolution
+- Either player can dispute a submitted score
+- Admin reviews and resolves with correct score
+- Ladder positions automatically recalculated if winner changes
 
-```sql
-INSERT INTO seasons (name, start_date, wildcards_per_player)
-VALUES ('Season 1 - 2025', '2025-01-16', 2);
-```
+## Documentation
 
-## Development
-
-### Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
-
-### Database Migrations
-
-See `supabase/README.md` for detailed database setup and migration instructions.
+- **[DATABASE_SCHEMA.md](DATABASE_SCHEMA.md)**: Complete database documentation
+- **[USER_GUIDE.md](USER_GUIDE.md)**: End-user guide for players
+- **[claude.md](claude.md)**: AI development context for contributors
+- **[supabase/README.md](supabase/README.md)**: Database setup guide
 
 ## Deployment
 
 ### Deploy to Vercel
 
-1. Push your code to GitHub
-2. Import the project in Vercel
-3. Add environment variables in Vercel dashboard:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `RESEND_API_KEY` (get from https://resend.com/api-keys)
-   - `FROM_EMAIL=ladder@jlbweb.co.uk`
+1. Push code to GitHub
+2. Import project in Vercel
+3. Add environment variables (see `.env.local` example)
 4. Deploy!
 
-## Documentation
+### Supabase Configuration
 
-- [Project Plan](PROJECT_PLAN.md) - Comprehensive implementation plan
-- [Database Setup](supabase/README.md) - Database schema and migration guide
+**Critical**: Configure URL settings in Supabase Dashboard:
+1. Go to Authentication → URL Configuration
+2. Set Site URL to your production URL
+3. Add redirect URLs for production and development
+
+## Development
+
+### Available Scripts
+
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm start        # Start production server
+npm run lint     # Run ESLint
+```
+
+### Making Changes
+
+- **Frontend**: Edit files in `app/` and `components/`
+- **Backend**: Add server actions in `lib/actions/`
+- **Database**: Create migration files in `supabase/migrations/`
+- **Styling**: Tailwind CSS classes with custom theme
+
+### Database Migrations
+
+1. Create new file: `supabase/migrations/YYYYMMDD_###_description.sql`
+2. Write SQL migration
+3. Apply via Supabase SQL Editor
+4. Update `DATABASE_SCHEMA.md`
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## Production Instance
+
+- **URL**: https://singles-ladder.vercel.app
+- **Supabase**: Hosted on Supabase Cloud
+- **Email**: Sent via Resend (verified domain: jlbweb.co.uk)
+- **Status**: Production-ready, actively used
 
 ## Support
 
-For issues and questions, please refer to the project documentation or contact the development team.
+For issues or questions:
+- Check the documentation files listed above
+- Review `claude.md` for development context
+- Check [issues](https://github.com/bestjon-byte/Singles-Ladder/issues) on GitHub
 
 ## License
 
-Private project - All rights reserved.
+Private project - All rights reserved
+
+---
+
+**Built with ❤️ for tennis clubs everywhere**
