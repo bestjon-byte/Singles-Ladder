@@ -15,6 +15,7 @@ export type SeasonStatus =
 
 export type MatchType =
   | 'challenge'
+  | 'quarterfinal'
   | 'semifinal'
   | 'final'
   | 'third_place'
@@ -32,6 +33,13 @@ export type NotificationType =
   | 'score_submitted'
   | 'score_disputed'
   | 'season_ended'
+  | 'playoff_started'
+  | 'playoff_match_ready'
+  | 'playoff_advanced'
+  | 'playoff_eliminated'
+  | 'playoff_champion'
+
+export type PlayoffFormat = 'final' | 'semis' | 'quarters'
 
 export type LadderChangeReason =
   | 'match_result'
@@ -63,6 +71,10 @@ export interface Season {
   created_at: string
   updated_at: string
   status: SeasonStatus
+  playoff_format?: PlayoffFormat
+  playoff_started_at?: string
+  playoff_winner_id?: string
+  playoff_completed_at?: string
 }
 
 export interface LadderPosition {
@@ -120,7 +132,56 @@ export interface Match {
   created_at: string
   updated_at: string
   completed_at?: string
+  round_number?: number
+  bracket_position?: number
+  player1_seed?: number
+  player2_seed?: number
   player1?: User
   player2?: User
   winner?: User
+}
+
+// Playoff Bracket Types
+export interface PlayoffBracketMatch {
+  matchId: string
+  player1Seed: number
+  player2Seed: number
+  player1Id?: string
+  player2Id?: string
+  player1Name?: string
+  player2Name?: string
+  winnerId?: string
+  position: number
+  isComplete: boolean
+  scores?: {
+    set1Player1?: number
+    set1Player2?: number
+    set2Player1?: number
+    set2Player2?: number
+    set3Player1?: number
+    set3Player2?: number
+  }
+}
+
+export interface PlayoffBracketRound {
+  roundNumber: number
+  roundName: string
+  matches: PlayoffBracketMatch[]
+  isComplete: boolean
+}
+
+export interface PlayoffBracketData {
+  format: PlayoffFormat
+  rounds: PlayoffBracketRound[]
+  winnerId?: string
+  completedAt?: string
+}
+
+export interface PlayoffBracket {
+  id: string
+  season_id: string
+  format: PlayoffFormat
+  bracket_data: PlayoffBracketData
+  created_at: string
+  updated_at: string
 }

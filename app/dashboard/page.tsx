@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Navigation from '@/components/Navigation'
 import InteractiveLadder from '@/components/ladder/InteractiveLadder'
+import { getActivePlayoffBracket } from '@/lib/actions/playoffs'
 import { Trophy, Target, TrendingUp, Zap } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -34,9 +35,12 @@ export default async function DashboardPage() {
   // Get active season
   const { data: season } = await supabase
     .from('seasons')
-    .select('id, name, wildcards_per_player')
+    .select('*')
     .eq('is_active', true)
     .maybeSingle()
+
+  // Check for active playoffs
+  const activePlayoffBracket = season ? await getActivePlayoffBracket(season.id) : null
 
   // Get user's ladder position (only if there's an active season)
   const { data: ladderEntry } = season ? await supabase
@@ -152,6 +156,40 @@ export default async function DashboardPage() {
             </div>
           )}
         </div>
+
+        {/* Playoff Banner */}
+        {activePlayoffBracket && season && (season.status === 'playoffs' || season.status === 'completed') && (
+          <Link href="/matches" className="block mb-6">
+            <div className={`rounded-lg p-6 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] cursor-pointer ${
+              season.status === 'completed'
+                ? 'bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500'
+                : 'bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600'
+            }`}>
+              <div className="flex items-center gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                    <Trophy className="w-8 h-8 text-white animate-pulse" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-heading font-bold text-white mb-1">
+                    {season.status === 'completed' ? '🏆 Season Complete!' : '🏆 Knockout Playoffs In Progress!'}
+                  </h3>
+                  <p className="text-white/90 text-lg">
+                    {season.status === 'completed'
+                      ? 'View the final bracket and champion'
+                      : `${activePlayoffBracket.bracket_data.format === 'final' ? 'Final' : activePlayoffBracket.bracket_data.format === 'semis' ? 'Semi Finals' : 'Quarter Finals'} stage • Click to view bracket`}
+                  </p>
+                </div>
+                <div className="flex-shrink-0">
+                  <div className="px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-white/90 transition-colors">
+                    View Bracket
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Link>
+        )}
 
         {/* Pending Challenges Alert */}
         {challengesToAccept.length > 0 && (

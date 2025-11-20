@@ -4,6 +4,8 @@ import Navigation from '@/components/Navigation'
 import MatchesList from '@/components/matches/MatchesList'
 import MatchesHeader from '@/components/matches/MatchesHeader'
 import ChallengeCard from '@/components/challenges/ChallengeCard'
+import PlayoffBracketView from '@/components/playoffs/PlayoffBracketView'
+import { getActivePlayoffBracket } from '@/lib/actions/playoffs'
 import { Award, Trophy, TrendingUp, AlertCircle } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -35,7 +37,7 @@ export default async function MatchesPage() {
   // Get active season
   const { data: activeSeason } = await supabase
     .from('seasons')
-    .select('id, name, wildcards_per_player')
+    .select('*')
     .eq('is_active', true)
     .single()
 
@@ -53,6 +55,21 @@ export default async function MatchesPage() {
               Matches will be available once a season starts.
             </p>
           </div>
+        </main>
+      </div>
+    )
+  }
+
+  // Check for active playoffs
+  const activePlayoffBracket = await getActivePlayoffBracket(activeSeason.id)
+
+  // If playoffs are active, show playoff bracket view
+  if (activePlayoffBracket && (activeSeason.status === 'playoffs' || activeSeason.status === 'completed')) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Navigation isAdmin={!!admin} userName={profile?.name} />
+        <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <PlayoffBracketView bracket={activePlayoffBracket} currentUserId={user.id} />
         </main>
       </div>
     )

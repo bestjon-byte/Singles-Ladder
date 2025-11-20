@@ -55,16 +55,31 @@ export default async function AdminLadderPage() {
 
   return (
     <div className="px-4 sm:px-0">
-      <h1 className="text-3xl font-heading font-bold text-gray-900 dark:text-white mb-8">
-        Manage Ladder
-      </h1>
-
-      <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        Active Season: <span className="font-medium text-gray-900 dark:text-white">{activeSeason.name}</span>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-heading font-bold text-gray-900 dark:text-white">
+            Manage Ladder
+          </h1>
+          <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Active Season: <span className="font-medium text-gray-900 dark:text-white">{activeSeason.name}</span>
+            {activeSeason.status === 'playoffs' && (
+              <span className="ml-2 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-md text-xs font-medium">
+                Playoffs In Progress
+              </span>
+            )}
+            {activeSeason.status === 'completed' && (
+              <span className="ml-2 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md text-xs font-medium">
+                Season Complete
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
       <LadderManagement
         seasonId={activeSeason.id}
+        seasonName={activeSeason.name}
+        seasonStatus={activeSeason.status}
         initialPositions={positions || []}
         availableUsers={availableUsers || []}
       />
