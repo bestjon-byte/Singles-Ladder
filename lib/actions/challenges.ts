@@ -157,21 +157,9 @@ export async function createChallenge(params: CreateChallengeParams) {
       return { error: 'Failed to create challenge' }
     }
 
-    // If wildcard, record wildcard usage
-    if (params.isWildcard && challenge) {
-      const { error: wildcardError } = await supabase
-        .from('wildcard_usage')
-        .insert({
-          season_id: activeSeason.id,
-          user_id: user.id,
-          challenge_id: challenge.id,
-        })
-
-      if (wildcardError) {
-        console.error('Error recording wildcard usage:', wildcardError)
-        // Don't fail the challenge creation, just log it
-      }
-    }
+    // Note: Wildcard is reserved but not consumed until match is completed
+    // The is_wildcard flag on the challenge tracks the reservation
+    // Actual consumption happens in submitMatchScore
 
     // Send notification to challenged player
     try {
@@ -322,19 +310,8 @@ export async function rejectChallenge(challengeId: string) {
       return { error: 'Failed to reject challenge' }
     }
 
-    // Refund wildcard if this was a wildcard challenge
-    if (challenge.is_wildcard) {
-      const { error: wildcardError } = await supabase
-        .from('wildcard_usage')
-        .delete()
-        .eq('challenge_id', challengeId)
-        .eq('user_id', challenge.challenger_id)
-
-      if (wildcardError) {
-        console.error('Error refunding wildcard:', wildcardError)
-        // Don't fail the rejection if wildcard refund fails
-      }
-    }
+    // Note: No need to refund wildcard since it's only consumed on match completion
+    // The is_wildcard flag remains on the challenge record for historical tracking
 
     // Send notification to challenger
     try {
@@ -400,19 +377,23 @@ export async function withdrawChallenge(challengeId: string) {
       return { error: 'Failed to withdraw challenge' }
     }
 
-    // Refund wildcard if this was a wildcard challenge
-    if (challenge.is_wildcard) {
-      const { error: wildcardError } = await supabase
-        .from('wildcard_usage')
+    // If challenge was accepted, delete the associated match fixture
+    if (challenge.status === 'accepted') {
+      const { error: matchDeleteError } = await supabase
+        .from('matches')
         .delete()
         .eq('challenge_id', challengeId)
-        .eq('user_id', user.id)
+        .is('winner_id', null) // Only delete if no score has been submitted
 
-      if (wildcardError) {
-        console.error('Error refunding wildcard:', wildcardError)
-        // Don't fail the withdrawal if wildcard refund fails
+      if (matchDeleteError) {
+        console.error('Error deleting match fixture:', matchDeleteError)
+        // Don't fail the withdrawal if match deletion fails
+        // The match will remain but challenge is withdrawn
       }
     }
+
+    // Note: No need to refund wildcard since it's only consumed on match completion
+    // The is_wildcard flag remains on the challenge record for historical tracking
 
     // Send notification to challenged player
     try {

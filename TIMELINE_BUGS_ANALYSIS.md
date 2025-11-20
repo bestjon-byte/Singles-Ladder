@@ -1,9 +1,15 @@
 # Timeline Event Bugs Analysis: Mike vs Jon Best
 
 ## Overview
-This document identifies potential bugs in the challenge and match workflow that could affect the timeline of events between players.
+This document identifies bugs in the challenge and match workflow that could affect the timeline of events between players.
 
-## Bugs Identified
+## Status: ✅ BOTH BUGS FIXED
+
+All identified bugs have been fixed as of the latest commit. See the "Fixes Implemented" section at the end of this document.
+
+---
+
+## Bugs Identified (FIXED)
 
 ### Bug #1: Orphaned Match Fixtures After Challenge Withdrawal (CRITICAL)
 
@@ -257,3 +263,95 @@ The most likely bug affecting the timeline between Mike and Jon Best is **Bug #1
 - Timeline shows incomplete/inconsistent state
 
 Use the debug tools provided to verify this hypothesis.
+
+---
+
+## ✅ Fixes Implemented
+
+### Fix for Bug #1: Orphaned Match Fixtures
+
+**File**: `lib/actions/challenges.ts` (withdrawChallenge function)
+
+**Changes Made**:
+Added code to delete the associated match fixture when withdrawing an accepted challenge:
+
+```typescript
+// If challenge was accepted, delete the associated match fixture
+if (challenge.status === 'accepted') {
+  const { error: matchDeleteError } = await supabase
+    .from('matches')
+    .delete()
+    .eq('challenge_id', challengeId)
+    .is('winner_id', null) // Only delete if no score has been submitted
+
+  if (matchDeleteError) {
+    console.error('Error deleting match fixture:', matchDeleteError)
+    // Don't fail the withdrawal if match deletion fails
+    // The match will remain but challenge is withdrawn
+  }
+}
+```
+
+**Result**: When a player withdraws an accepted challenge, the match fixture is automatically cleaned up, preventing orphaned records.
+
+---
+
+### Fix for Bug #2: Wildcard Consumption Timing
+
+**Files Modified**:
+1. `lib/actions/challenges.ts` (createChallenge, rejectChallenge, withdrawChallenge)
+2. `lib/actions/matches.ts` (submitMatchScore)
+
+**Changes Made**:
+
+1. **Removed immediate wildcard consumption from createChallenge**:
+   - Deleted the wildcard_usage insert that happened when challenge was created
+   - Added comment explaining wildcards are reserved but not consumed until match completion
+
+2. **Removed wildcard refund from rejectChallenge**:
+   - Deleted the wildcard_usage delete logic
+   - Added comment explaining no refund is needed since wildcard isn't consumed yet
+
+3. **Removed wildcard refund from withdrawChallenge**:
+   - Deleted the wildcard_usage delete logic
+   - Added comment explaining no refund is needed since wildcard isn't consumed yet
+
+4. **Added wildcard consumption to submitMatchScore**:
+   - When a match score is submitted and the challenge is marked as completed
+   - Check if the challenge used a wildcard (is_wildcard = true)
+   - Insert a record into wildcard_usage table
+   - This is when the wildcard is actually consumed
+
+**New Wildcard Lifecycle**:
+1. Challenge created with `is_wildcard=true` → Wildcard **reserved** (tracked on challenge record)
+2. Challenge rejected/withdrawn → No wildcard consumed, no refund needed
+3. Match completed (score submitted) → Wildcard **consumed** (record inserted to wildcard_usage)
+
+**Result**: Wildcard consumption now matches the documented behavior in DATABASE_SCHEMA.md. Wildcards are only consumed when matches are actually completed, not when challenges are created.
+
+---
+
+## Verification
+
+After implementing these fixes, you should verify:
+
+1. **No more orphaned matches**: Query for matches with withdrawn/cancelled challenges and null winner_id - should return zero results
+2. **Wildcard tracking accuracy**: Check wildcard_usage table only contains records for completed matches
+3. **Challenge withdrawal works cleanly**: Players can withdraw accepted challenges and immediately create new ones without "incomplete match" errors
+
+### Verification Queries
+
+```sql
+-- Should return 0 results after fix
+SELECT m.id, m.challenge_id, c.status as challenge_status
+FROM matches m
+JOIN challenges c ON c.id = m.challenge_id
+WHERE c.status IN ('withdrawn', 'cancelled')
+  AND m.winner_id IS NULL;
+
+-- All wildcard usage records should have completed challenges
+SELECT wu.*, c.status
+FROM wildcard_usage wu
+JOIN challenges c ON c.id = wu.challenge_id
+WHERE c.status != 'completed';  -- Should return 0 results
+```
