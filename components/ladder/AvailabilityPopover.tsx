@@ -39,30 +39,35 @@ export default function AvailabilityPopover({ playerName, availability }: Availa
           className="
             bg-white dark:bg-gray-800 rounded-lg
             shadow-lg border-2 border-primary-200 dark:border-primary-700
-            p-5 w-80 sm:w-96 z-50
+            w-[calc(100vw-2rem)] sm:w-96 z-50
+            max-h-[85vh] overflow-y-auto
             animate-in fade-in-0 zoom-in-95
             data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95
           "
           sideOffset={8}
-          align="end"
+          align="center"
+          side="top"
+          collisionPadding={16}
         >
-          {/* Header */}
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {firstName}&apos;s Availability
-            </h3>
-            <div className="h-px bg-gray-200 dark:bg-gray-700 mt-2" />
-          </div>
+          <div className="p-4 sm:p-5">
+            {/* Header */}
+            <div className="mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                {firstName}&apos;s Availability
+              </h3>
+              <div className="h-px bg-gray-200 dark:bg-gray-700 mt-2" />
+            </div>
 
-          {/* Grid */}
-          <AvailabilityGrid availability={availability} />
+            {/* Grid */}
+            <AvailabilityGrid availability={availability} />
 
-          {/* Footer */}
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
-              <span>💡</span>
-              <span>This is typical availability. Confirm specific times when challenging.</span>
-            </p>
+            {/* Footer */}
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                <span>💡</span>
+                <span>This is typical availability. Confirm specific times when challenging.</span>
+              </p>
+            </div>
           </div>
 
           <Popover.Arrow className="fill-primary-200 dark:fill-primary-700" />
