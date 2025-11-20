@@ -49,7 +49,7 @@ export default function AvailabilityPopover({ playerName, availability }: Availa
           {/* Header */}
           <div className="mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {firstName}'s Availability
+              {firstName}&apos;s Availability
             </h3>
             <div className="h-px bg-gray-200 dark:bg-gray-700 mt-2" />
           </div>
