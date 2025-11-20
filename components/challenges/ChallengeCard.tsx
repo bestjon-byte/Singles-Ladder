@@ -188,7 +188,7 @@ export default function ChallengeCard({ challenge, currentUserId }: ChallengeCar
       {/* Actions */}
       {challenge.status === 'pending' && (
         <div className="mt-6 space-y-3">
-          {!isChallenger && (
+          {challenge.challenged.id === currentUserId && (
             <div className="flex space-x-3">
               <button
                 onClick={handleAccept}
