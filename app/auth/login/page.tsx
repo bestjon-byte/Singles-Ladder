@@ -157,7 +157,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:bg-gray-400 disabled:hover:bg-gray-400"
             >
               <LogIn className="w-5 h-5 inline mr-2" />
               {loading ? 'Signing in...' : 'Sign in'}

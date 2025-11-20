@@ -33,7 +33,7 @@ export default async function AdminLayout({
 
   // Calculate days until season ends
   let daysUntilEnd: number | null = null
-  if (activeSeason) {
+  if (activeSeason && activeSeason.end_date) {
     daysUntilEnd = Math.ceil(
       (new Date(activeSeason.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
     )
@@ -54,7 +54,7 @@ export default async function AdminLayout({
                 Active Season: {activeSeason.name}
               </span>
               <span className="text-primary-700 dark:text-primary-300 hidden sm:inline">
-                ({new Date(activeSeason.start_date).toLocaleDateString()} - {new Date(activeSeason.end_date).toLocaleDateString()})
+                ({new Date(activeSeason.start_date).toLocaleDateString()}{activeSeason.end_date ? ` - ${new Date(activeSeason.end_date).toLocaleDateString()}` : ''})
               </span>
             </div>
             {daysUntilEnd !== null && daysUntilEnd <= 7 && daysUntilEnd > 0 && (
