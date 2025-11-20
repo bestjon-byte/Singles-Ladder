@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createChallenge } from '@/lib/actions/challenges'
 import { createClient } from '@/lib/supabase/client'
+import AvailabilityGrid from '@/components/shared/AvailabilityGrid'
+import { AvailabilityData } from '@/types/availability'
 
 interface Player {
   id: string
@@ -13,6 +15,7 @@ interface Player {
     id: string
     name: string
     email: string
+    availability?: AvailabilityData | null
   }
 }
 
@@ -57,7 +60,7 @@ export default function CreateChallengeModal({
         id,
         position,
         user_id,
-        user:users!ladder_positions_user_id_fkey(id, name, email)
+        user:users!ladder_positions_user_id_fkey(id, name, email, availability)
       `)
       .eq('season_id', seasonId)
       .eq('is_active', true)
@@ -195,6 +198,39 @@ export default function CreateChallengeModal({
                   </select>
                 )}
               </div>
+
+              {/* Player Availability Display */}
+              {selectedPlayerId && (() => {
+                const selectedPlayer = players.find(p => p.user_id === selectedPlayerId)
+                const availability = selectedPlayer?.user?.availability
+
+                return (
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6l4 2"/>
+                      </svg>
+                      {selectedPlayer?.user?.name}&apos;s Availability
+                    </h3>
+                    {availability ? (
+                      <>
+                        <AvailabilityGrid availability={availability} />
+                        <p className="mt-3 text-xs text-gray-600 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded p-2">
+                          💡 <strong>Tip:</strong> Consider proposing a time when they&apos;re typically available.
+                        </p>
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 p-3 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        This player hasn&apos;t set their availability yet. You can still propose any time.
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
 
               {/* Proposed Date */}
               <div>
