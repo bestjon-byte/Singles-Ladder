@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronUp, ChevronDown } from 'lucide-react'
+import { ChevronUp, ChevronDown, Trophy } from 'lucide-react'
 import { addPlayerToLadder, removePlayerFromLadder, movePlayerPosition } from '@/lib/actions/ladder-admin'
+import StartPlayoffsModal from './StartPlayoffsModal'
+import type { SeasonStatus } from '@/types'
 
 interface User {
   id: string
@@ -20,12 +22,16 @@ interface LadderPosition {
 
 interface LadderManagementProps {
   seasonId: string
+  seasonName: string
+  seasonStatus: SeasonStatus
   initialPositions: LadderPosition[]
   availableUsers: User[]
 }
 
 export default function LadderManagement({
   seasonId,
+  seasonName,
+  seasonStatus,
   initialPositions,
   availableUsers,
 }: LadderManagementProps) {
@@ -35,6 +41,7 @@ export default function LadderManagement({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [showPlayoffsModal, setShowPlayoffsModal] = useState(false)
 
   const handleAddPlayer = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -149,6 +156,30 @@ export default function LadderManagement({
 
   return (
     <div className="space-y-8">
+      {/* Start Playoffs Button */}
+      {seasonStatus === 'active' && initialPositions.length >= 2 && (
+        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-2 border-purple-200 dark:border-purple-800 rounded-lg p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-purple-600" />
+                Ready for Playoffs?
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Start knockout playoffs to crown a champion for this season
+              </p>
+            </div>
+            <button
+              onClick={() => setShowPlayoffsModal(true)}
+              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-medium shadow-lg hover:shadow-xl flex items-center gap-2"
+            >
+              <Trophy className="w-5 h-5" />
+              Start Playoffs
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Add Player Form */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
@@ -308,6 +339,15 @@ export default function LadderManagement({
           </div>
         )}
       </div>
+
+      {/* Start Playoffs Modal */}
+      {showPlayoffsModal && (
+        <StartPlayoffsModal
+          seasonId={seasonId}
+          seasonName={seasonName}
+          onClose={() => setShowPlayoffsModal(false)}
+        />
+      )}
     </div>
   )
 }

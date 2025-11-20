@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 interface TimelineEvent {
@@ -18,7 +18,7 @@ export default function TimelinePage() {
   const [player1Name, setPlayer1Name] = useState('Mike')
   const [player2Name, setPlayer2Name] = useState('Jon Best')
 
-  const fetchTimeline = async () => {
+  const fetchTimeline = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -156,11 +156,11 @@ export default function TimelinePage() {
       setError(err.message)
       setLoading(false)
     }
-  }
+  }, [player1Name, player2Name])
 
   useEffect(() => {
     fetchTimeline()
-  }, [])
+  }, [fetchTimeline])
 
   if (loading) return <div className="p-8">Loading timeline...</div>
   if (error) return <div className="p-8 text-red-600">Error: {error}</div>

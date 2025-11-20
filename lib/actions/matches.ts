@@ -189,6 +189,28 @@ export async function submitMatchScore(params: SubmitScoreParams) {
       }
     }
 
+    // Handle playoff progression
+    if (match.match_type && ['quarterfinal', 'semifinal', 'final'].includes(match.match_type)) {
+      console.log('Playoff match completed, progressing winner to next round...')
+      try {
+        const { progressToNextRound } = await import('@/lib/actions/playoffs')
+        const progressResult = await progressToNextRound(params.matchId)
+
+        if (progressResult.error) {
+          console.error('Error progressing to next round:', progressResult.error)
+        } else if ('champion' in progressResult && progressResult.champion) {
+          console.log('Championship won! Season complete.')
+        } else if ('nextRound' in progressResult && progressResult.nextRound) {
+          console.log(`Winner progressed to ${progressResult.nextRound}`)
+        } else {
+          console.log('Playoff progression completed')
+        }
+      } catch (error) {
+        console.error('Failed to progress playoff round:', error)
+        // Don't fail the operation if progression fails
+      }
+    }
+
     // TODO: Update player stats (Phase 6)
 
     // Send notifications to both players
