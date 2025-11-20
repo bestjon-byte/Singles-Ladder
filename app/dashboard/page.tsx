@@ -75,7 +75,7 @@ export default async function DashboardPage() {
       id,
       position,
       user_id,
-      user:users!ladder_positions_user_id_fkey(id, name, email)
+      user:users!ladder_positions_user_id_fkey(id, name, email, availability)
     `)
     .eq('season_id', season.id)
     .eq('is_active', true)
