@@ -67,118 +67,187 @@ export default function AvailabilitySelector({ value, onChange }: AvailabilitySe
   const hasAnyAvailability = Object.keys(availability).length > 0
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Info box */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-        <p className="text-sm text-blue-900 dark:text-blue-100">
-          Select your typical availability for tennis matches. Click individual time slots for each day. Other players will see this when choosing opponents on the ladder.
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-4">
+        <p className="text-xs sm:text-sm text-blue-900 dark:text-blue-100">
+          Select your typical availability for tennis matches. Click time slots for each day.
         </p>
       </div>
 
-      {/* Availability Grid */}
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 overflow-x-auto">
-        <div className="min-w-[600px]">
-          {/* Header Row */}
-          <div className="grid grid-cols-4 gap-2 mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
-            <div className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Day
+      {/* Mobile View: Stacked Days */}
+      <div className="block lg:hidden space-y-3">
+        {DAYS_OF_WEEK.map((day) => (
+          <div
+            key={day}
+            className={`
+              border-2 rounded-lg p-3 transition-colors
+              ${isDaySelected(day)
+                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/10'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+              }
+            `}
+          >
+            <div className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              {DAY_LABELS[day]}
             </div>
-            {TIME_SLOTS.map((slot) => {
-              const config = TIME_SLOT_CONFIG[slot]
-              const Icon = ICON_MAP[config.icon as keyof typeof ICON_MAP]
-              return (
-                <div
-                  key={slot}
-                  className="flex flex-col items-center justify-center text-center"
-                >
-                  <Icon className="w-5 h-5 mb-1 text-gray-600 dark:text-gray-400" />
-                  <div className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    {config.label}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {config.time}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+            <div className="grid grid-cols-3 gap-2">
+              {TIME_SLOTS.map((slot) => {
+                const config = TIME_SLOT_CONFIG[slot]
+                const Icon = ICON_MAP[config.icon as keyof typeof ICON_MAP]
+                const isSelected = isSlotSelected(day, slot)
 
-          {/* Day Rows */}
-          <div className="space-y-2">
-            {DAYS_OF_WEEK.map((day) => (
-              <div
-                key={day}
-                className={`
-                  grid grid-cols-4 gap-2 items-center p-2 rounded-lg transition-colors
-                  ${isDaySelected(day) ? 'bg-primary-50 dark:bg-primary-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'}
-                `}
-              >
-                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {DAY_LABELS[day]}
-                </div>
-                {TIME_SLOTS.map((slot) => {
-                  const isSelected = isSlotSelected(day, slot)
-                  return (
-                    <div key={slot} className="flex justify-center">
-                      <button
-                        type="button"
-                        onClick={() => toggleSlot(day, slot)}
-                        className={`
-                          w-14 h-14 rounded-lg border-2 transition-all duration-200
-                          focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
-                          hover:scale-105 active:scale-95
-                          ${isSelected
-                            ? 'bg-green-100 dark:bg-green-900/30 border-green-500 dark:border-green-400 shadow-sm'
-                            : 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
-                          }
-                        `}
-                        aria-label={`${DAY_LABELS[day]} ${TIME_SLOT_CONFIG[slot].label} - ${isSelected ? 'selected' : 'not selected'}`}
-                        aria-pressed={isSelected}
-                      >
-                        {isSelected && (
-                          <div className="flex items-center justify-center">
-                            <div className="w-6 h-6 rounded-full bg-green-600 dark:bg-green-400 flex items-center justify-center">
-                              <svg
-                                className="w-4 h-4 text-white dark:text-gray-900"
-                                fill="none"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path d="M5 13l4 4L19 7" />
-                              </svg>
-                            </div>
-                          </div>
-                        )}
-                      </button>
+                return (
+                  <button
+                    key={slot}
+                    type="button"
+                    onClick={() => toggleSlot(day, slot)}
+                    className={`
+                      p-2 rounded-lg border-2 transition-all duration-200
+                      focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+                      active:scale-95
+                      ${isSelected
+                        ? 'bg-green-100 dark:bg-green-900/30 border-green-500 dark:border-green-400'
+                        : 'bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-600'
+                      }
+                    `}
+                    aria-label={`${DAY_LABELS[day]} ${config.label} - ${isSelected ? 'selected' : 'not selected'}`}
+                    aria-pressed={isSelected}
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <Icon className={`w-4 h-4 ${isSelected ? 'text-green-700 dark:text-green-300' : 'text-gray-600 dark:text-gray-400'}`} />
+                      <div className={`text-xs font-medium ${isSelected ? 'text-green-700 dark:text-green-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                        {config.label}
+                      </div>
+                      <div className={`text-xs ${isSelected ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-500'}`}>
+                        {config.time}
+                      </div>
+                      {isSelected && (
+                        <div className="w-5 h-5 rounded-full bg-green-600 dark:bg-green-400 flex items-center justify-center mt-1">
+                          <svg
+                            className="w-3 h-3 text-white dark:text-gray-900"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
-                  )
-                })}
-              </div>
-            ))}
+                  </button>
+                )
+              })}
+            </div>
           </div>
+        ))}
+      </div>
+
+      {/* Desktop View: Grid */}
+      <div className="hidden lg:block border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+        {/* Header Row */}
+        <div className="grid grid-cols-4 gap-2 mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+          <div className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Day
+          </div>
+          {TIME_SLOTS.map((slot) => {
+            const config = TIME_SLOT_CONFIG[slot]
+            const Icon = ICON_MAP[config.icon as keyof typeof ICON_MAP]
+            return (
+              <div
+                key={slot}
+                className="flex flex-col items-center justify-center text-center"
+              >
+                <Icon className="w-5 h-5 mb-1 text-gray-600 dark:text-gray-400" />
+                <div className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  {config.label}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {config.time}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Day Rows */}
+        <div className="space-y-2">
+          {DAYS_OF_WEEK.map((day) => (
+            <div
+              key={day}
+              className={`
+                grid grid-cols-4 gap-2 items-center p-2 rounded-lg transition-colors
+                ${isDaySelected(day) ? 'bg-primary-50 dark:bg-primary-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'}
+              `}
+            >
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {DAY_LABELS[day]}
+              </div>
+              {TIME_SLOTS.map((slot) => {
+                const isSelected = isSlotSelected(day, slot)
+                return (
+                  <div key={slot} className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => toggleSlot(day, slot)}
+                      className={`
+                        w-14 h-14 rounded-lg border-2 transition-all duration-200
+                        focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+                        hover:scale-105 active:scale-95
+                        ${isSelected
+                          ? 'bg-green-100 dark:bg-green-900/30 border-green-500 dark:border-green-400 shadow-sm'
+                          : 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                        }
+                      `}
+                      aria-label={`${DAY_LABELS[day]} ${TIME_SLOT_CONFIG[slot].label} - ${isSelected ? 'selected' : 'not selected'}`}
+                      aria-pressed={isSelected}
+                    >
+                      {isSelected && (
+                        <div className="flex items-center justify-center">
+                          <div className="w-6 h-6 rounded-full bg-green-600 dark:bg-green-400 flex items-center justify-center">
+                            <svg
+                              className="w-4 h-4 text-white dark:text-gray-900"
+                              fill="none"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Status message */}
       {hasAnyAvailability ? (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-          <p className="text-sm text-green-900 dark:text-green-100">
+          <p className="text-xs sm:text-sm text-green-900 dark:text-green-100">
             ✓ You have set your availability for {Object.keys(availability).length} day{Object.keys(availability).length !== 1 ? 's' : ''}
           </p>
         </div>
       ) : (
         <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
             Click time slots above to set your availability
           </p>
         </div>
       )}
 
       {/* Help text */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
         <p className="text-xs text-gray-600 dark:text-gray-400">
           💡 <strong>Tip:</strong> This is your general availability. Specific match times are agreed when creating challenges.
         </p>
