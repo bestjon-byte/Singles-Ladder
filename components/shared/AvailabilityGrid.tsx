@@ -1,4 +1,4 @@
-import { AvailabilityData, DAYS_OF_WEEK, DAY_LABELS } from '@/types/availability'
+import { AvailabilityData, DAYS_OF_WEEK, DAY_LABELS, DayOfWeek, TimeSlot } from '@/types/availability'
 
 interface AvailabilityGridProps {
   availability: AvailabilityData
@@ -6,8 +6,8 @@ interface AvailabilityGridProps {
 }
 
 export default function AvailabilityGrid({ availability, className = '' }: AvailabilityGridProps) {
-  const isAvailable = (day: string, slot: string) => {
-    return availability.days.includes(day as any) && availability.timeSlots.includes(slot as any)
+  const isAvailable = (day: DayOfWeek, slot: TimeSlot) => {
+    return availability[day]?.includes(slot) || false
   }
 
   return (
@@ -27,7 +27,7 @@ export default function AvailabilityGrid({ availability, className = '' }: Avail
             <div className="text-sm font-medium text-gray-700 dark:text-gray-300" role="rowheader">
               {DAY_LABELS[day]}
             </div>
-            {['morning', 'afternoon', 'evening'].map((slot) => (
+            {(['morning', 'afternoon', 'evening'] as TimeSlot[]).map((slot) => (
               <div
                 key={slot}
                 className="flex items-center justify-center h-8"

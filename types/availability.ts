@@ -12,10 +12,9 @@ export type TimeSlot =
   | 'afternoon'  // 12pm-5pm
   | 'evening'    // 5pm-9pm
 
-export interface AvailabilityData {
-  days: DayOfWeek[]
-  timeSlots: TimeSlot[]
-}
+// New structure: each day maps to an array of time slots
+// Example: { monday: ['morning', 'evening'], saturday: ['morning', 'afternoon', 'evening'] }
+export type AvailabilityData = Partial<Record<DayOfWeek, TimeSlot[]>>
 
 export const DAYS_OF_WEEK: DayOfWeek[] = [
   'monday',
