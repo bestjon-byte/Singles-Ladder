@@ -37,6 +37,8 @@ export default function ChallengeCard({ challenge, currentUserId }: ChallengeCar
   const [error, setError] = useState<string | null>(null)
 
   const isChallenger = challenge.challenger.id === currentUserId
+  const isChallenged = challenge.challenged.id === currentUserId
+  const isInvolved = isChallenger || isChallenged
   const opponent = isChallenger ? challenge.challenged : challenge.challenger
 
   const handleAccept = async () => {
@@ -122,7 +124,10 @@ export default function ChallengeCard({ challenge, currentUserId }: ChallengeCar
         <div>
           <div className="flex items-center space-x-2 mb-2">
             <h4 className="text-lg font-medium text-gray-900 dark:text-white">
-              {isChallenger ? `Challenge to ${opponent.name}` : `Challenge from ${opponent.name}`}
+              {isInvolved
+                ? (isChallenger ? `Challenge to ${opponent.name}` : `Challenge from ${opponent.name}`)
+                : `${challenge.challenger.name} challenges ${challenge.challenged.name}`
+              }
             </h4>
             {challenge.is_wildcard && (
               <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400 rounded-full">
@@ -137,58 +142,60 @@ export default function ChallengeCard({ challenge, currentUserId }: ChallengeCar
         {getStatusBadge()}
       </div>
 
-      {/* Challenge Details */}
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
-        <div>
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Proposed Date & Time</p>
-          <p className="text-sm text-gray-900 dark:text-white">
-            {formatDate(challenge.proposed_date)}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Proposed Location</p>
-          <p className="text-sm text-gray-900 dark:text-white">{challenge.proposed_location}</p>
-        </div>
-
-        {challenge.status === 'accepted' && challenge.accepted_date && (
-          <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-md">
-            <p className="text-sm font-medium text-green-800 dark:text-green-400 mb-1">
-              Challenge Accepted!
-            </p>
-            <p className="text-sm text-green-700 dark:text-green-300">
-              Date: {formatDate(challenge.accepted_date)}
-            </p>
-            <p className="text-sm text-green-700 dark:text-green-300">
-              Location: {challenge.accepted_location}
+      {/* Challenge Details - Only show to involved users */}
+      {isInvolved && (
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
+          <div>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Proposed Date & Time</p>
+            <p className="text-sm text-gray-900 dark:text-white">
+              {formatDate(challenge.proposed_date)}
             </p>
           </div>
-        )}
-
-        {/* WhatsApp Share Button (for both pending and accepted challenges) */}
-        {(challenge.status === 'pending' || challenge.status === 'accepted') && (
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <WhatsAppShareDialog
-              challengerName={challenge.challenger.name}
-              challengedName={challenge.challenged.name}
-              proposedDate={challenge.proposed_date}
-              proposedLocation={challenge.proposed_location}
-              isWildcard={challenge.is_wildcard}
-            />
+          <div>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Proposed Location</p>
+            <p className="text-sm text-gray-900 dark:text-white">{challenge.proposed_location}</p>
           </div>
-        )}
-      </div>
 
-      {/* Error Message */}
-      {error && (
+          {challenge.status === 'accepted' && challenge.accepted_date && (
+            <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-md">
+              <p className="text-sm font-medium text-green-800 dark:text-green-400 mb-1">
+                Challenge Accepted!
+              </p>
+              <p className="text-sm text-green-700 dark:text-green-300">
+                Date: {formatDate(challenge.accepted_date)}
+              </p>
+              <p className="text-sm text-green-700 dark:text-green-300">
+                Location: {challenge.accepted_location}
+              </p>
+            </div>
+          )}
+
+          {/* WhatsApp Share Button (for both pending and accepted challenges) */}
+          {(challenge.status === 'pending' || challenge.status === 'accepted') && (
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <WhatsAppShareDialog
+                challengerName={challenge.challenger.name}
+                challengedName={challenge.challenged.name}
+                proposedDate={challenge.proposed_date}
+                proposedLocation={challenge.proposed_location}
+                isWildcard={challenge.is_wildcard}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Error Message - Only for involved users */}
+      {isInvolved && error && (
         <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-md">
           <p className="text-sm text-red-800 dark:text-red-400">{error}</p>
         </div>
       )}
 
-      {/* Actions */}
-      {challenge.status === 'pending' && (
+      {/* Actions - Only for involved users */}
+      {isInvolved && challenge.status === 'pending' && (
         <div className="mt-6 space-y-3">
-          {challenge.challenged.id === currentUserId && (
+          {isChallenged && (
             <div className="flex space-x-3">
               <button
                 onClick={handleAccept}
@@ -219,7 +226,7 @@ export default function ChallengeCard({ challenge, currentUserId }: ChallengeCar
         </div>
       )}
 
-      {challenge.status === 'accepted' && isChallenger && (
+      {isInvolved && challenge.status === 'accepted' && isChallenger && (
         <div className="mt-6">
           <button
             onClick={handleWithdraw}
