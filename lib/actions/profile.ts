@@ -2,12 +2,14 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { AvailabilityData } from '@/types/availability'
 
 export interface UpdateProfileParams {
   name: string
   whatsapp_number?: string
   email_notifications_enabled: boolean
   whatsapp_notifications_enabled: boolean
+  availability?: AvailabilityData | null
 }
 
 export async function updateProfile(params: UpdateProfileParams) {
@@ -28,6 +30,7 @@ export async function updateProfile(params: UpdateProfileParams) {
       whatsapp_number: params.whatsapp_number || null,
       email_notifications_enabled: params.email_notifications_enabled,
       whatsapp_notifications_enabled: params.whatsapp_notifications_enabled,
+      availability: params.availability || null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', user.id)

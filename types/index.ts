@@ -1,3 +1,5 @@
+import { AvailabilityData } from './availability'
+
 export type ChallengeStatus =
   | 'pending'
   | 'accepted'
@@ -47,6 +49,7 @@ export interface User {
   is_active: boolean
   email_notifications_enabled: boolean
   whatsapp_notifications_enabled: boolean
+  availability?: AvailabilityData | null
 }
 
 export interface Season {

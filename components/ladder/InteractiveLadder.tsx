@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { Trophy, Zap, User, Lock } from 'lucide-react'
 import CreateChallengeModal from '@/components/challenges/CreateChallengeModal'
+import AvailabilityPopover from './AvailabilityPopover'
+import { AvailabilityData } from '@/types/availability'
 
 interface LadderPlayer {
   id: string
@@ -12,6 +14,7 @@ interface LadderPlayer {
     id: string
     name: string
     email: string
+    availability?: AvailabilityData | null
   }
 }
 
@@ -152,7 +155,7 @@ export default function InteractiveLadder({
                 key={player.id}
                 onClick={() => !isDisabled && !isCurrent && !locked && handlePlayerClick(player)}
                 className={`
-                  flex items-center justify-between p-2.5 sm:p-3 md:p-4 rounded-lg border-2 transition-all
+                  relative flex items-center justify-between p-2.5 sm:p-3 md:p-4 rounded-lg border-2 transition-all
                   ${isCurrent
                     ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-300 dark:border-primary-700'
                     : locked
@@ -220,6 +223,19 @@ export default function InteractiveLadder({
                 {locked && !isCurrent && (
                   <div className="text-xs sm:text-sm font-medium text-red-600 dark:text-red-400 hidden md:block flex-shrink-0 ml-2">
                     In active challenge
+                  </div>
+                )}
+
+                {/* Availability indicator */}
+                {player.user.availability && (
+                  <div
+                    className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <AvailabilityPopover
+                      playerName={player.user.name}
+                      availability={player.user.availability}
+                    />
                   </div>
                 )}
               </div>
