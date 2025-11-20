@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createChallenge } from '@/lib/actions/challenges'
 import { createClient } from '@/lib/supabase/client'
@@ -46,11 +46,7 @@ export default function CreateChallengeModal({
   const [fetchingPlayers, setFetchingPlayers] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchPlayers()
-  }, [seasonId])
-
-  const fetchPlayers = async () => {
+  const fetchPlayers = useCallback(async () => {
     setFetchingPlayers(true)
     const supabase = createClient()
 
@@ -74,7 +70,11 @@ export default function CreateChallengeModal({
     }
 
     setFetchingPlayers(false)
-  }
+  }, [seasonId])
+
+  useEffect(() => {
+    fetchPlayers()
+  }, [fetchPlayers])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

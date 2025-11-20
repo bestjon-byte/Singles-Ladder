@@ -198,10 +198,12 @@ export async function submitMatchScore(params: SubmitScoreParams) {
 
         if (progressResult.error) {
           console.error('Error progressing to next round:', progressResult.error)
-        } else if (progressResult.champion) {
+        } else if ('champion' in progressResult && progressResult.champion) {
           console.log('Championship won! Season complete.')
-        } else if (progressResult.nextRound) {
+        } else if ('nextRound' in progressResult && progressResult.nextRound) {
           console.log(`Winner progressed to ${progressResult.nextRound}`)
+        } else {
+          console.log('Playoff progression completed')
         }
       } catch (error) {
         console.error('Failed to progress playoff round:', error)
