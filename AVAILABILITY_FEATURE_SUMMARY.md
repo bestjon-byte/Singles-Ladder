@@ -7,11 +7,18 @@ Successfully implemented a profile availability feature that allows tennis playe
 
 ### Phase 1: UX/UI Design
 A comprehensive UX/UI design specification was created by a specialized design expert, including:
-- **Input Method**: Toggle buttons for days, icon-based cards for time slots
+- **Input Method**: 7×3 interactive grid with per-day time slot selection
 - **Display Method**: Click-triggered Radix UI Popover (mobile-friendly)
 - **Visual Design**: Green clock badge with 7×3 availability grid
 - **Accessibility**: Full ARIA support, keyboard navigation, screen reader compatible
 - **Mobile-First**: Responsive design with 44px minimum touch targets
+
+### Phase 1.5: Enhanced UX Requirements ✨
+Based on user feedback, the feature was enhanced to support **granular per-day availability**:
+- **Original**: Select days (Mon-Sun) + time slots that apply to ALL selected days
+- **Enhanced**: Select individual time slots for EACH day independently
+- **Example**: Monday Evening only, Saturday Morning only, Sunday All Day
+- **Benefit**: Much more flexible and realistic availability patterns
 
 ### Phase 2: Development
 Full-stack implementation completed by development team:
@@ -35,9 +42,11 @@ Full-stack implementation completed by development team:
 
 1. **`components/profile/AvailabilitySelector.tsx`**
    - Form component for setting availability in profile
-   - Toggle buttons for days (Mon-Sun)
-   - Icon cards for time slots (Morning/Afternoon/Evening)
-   - Validation warnings
+   - **7×3 interactive grid** with individual toggles for each day/time combination
+   - Icon headers for time slots (Morning/Afternoon/Evening with times)
+   - Visual feedback with checkmarks for selected slots
+   - Row highlighting for days with availability
+   - Status messages showing number of days configured
    - Dark mode support
 
 2. **`components/shared/AvailabilityGrid.tsx`**
@@ -73,13 +82,30 @@ Full-stack implementation completed by development team:
 
 ## Feature Specifications
 
-### Data Structure
+### Data Structure (Updated - v2) ⚡
+```typescript
+// TypeScript type:
+type AvailabilityData = Partial<Record<DayOfWeek, TimeSlot[]>>
+
+// Example JSON in database:
+{
+  "monday": ["evening"],
+  "saturday": ["morning"],
+  "sunday": ["morning", "afternoon", "evening"]
+}
+
+// This structure allows different time slots for each day
+// Empty object {} or null = no availability set
+```
+
+### Old Data Structure (v1 - Deprecated)
 ```json
 {
   "days": ["monday", "tuesday", "friday", "saturday"],
   "timeSlots": ["morning", "evening"]
 }
 ```
+⚠️ **Breaking Change**: If you had v1 data, it needs to be migrated to v2 format.
 
 ### Time Slot Definitions
 - **Morning**: 8am-12pm (🌅 Sunrise icon)
@@ -96,15 +122,17 @@ Full-stack implementation completed by development team:
 **Branch**: `claude/add-profile-availability-01RrRMpVCA6NJTWvC5oNip22`
 
 **Commits**:
-- `12e3288` - Add profile availability feature
+- `12e3288` - Add profile availability feature (initial implementation)
 - `c3c31df` - Fix ESLint error: escape apostrophe in AvailabilityPopover
+- `effa355` - Add comprehensive implementation summary documentation
+- `2a83e80` - Update availability feature to support per-day time slot selection (BREAKING CHANGE)
 
 **Status**: ✅ All code pushed to remote branch
 
-**Changes**:
-- 9 files changed
-- 400 insertions(+)
-- 2 deletions(-)
+**Total Changes**:
+- 10 files changed
+- 428 insertions(+)
+- 106 deletions(-)
 
 ## Next Steps Required
 
@@ -206,11 +234,16 @@ The code will build successfully in your production environment with proper envi
 ### Setting Availability Flow
 1. User navigates to profile (`/profile`)
 2. Scrolls to "Availability Settings" section
-3. Clicks day buttons to select available days
-4. Clicks time slot cards to select time periods
-5. Clicks "Save Changes"
-6. Sees success message: "Profile updated successfully"
-7. Data is saved to `users.availability` as JSONB
+3. Sees a **7×3 grid** (7 days × 3 time slots)
+4. **Clicks individual cells** to toggle availability for that specific day/time
+   - Example: Click Monday/Evening cell to mark available Monday evenings
+   - Example: Click Saturday/Morning, Saturday/Afternoon, Saturday/Evening for all day Saturday
+5. Selected cells show **green background with checkmark icon**
+6. Rows with any availability get **highlighted background**
+7. Status message updates: "✓ You have set your availability for X days"
+8. Clicks "Save Changes"
+9. Sees success message: "Profile updated successfully"
+10. Data is saved to `users.availability` as JSONB
 
 ### Viewing Availability Flow
 1. User navigates to dashboard (`/dashboard`)
