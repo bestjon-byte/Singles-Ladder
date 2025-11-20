@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { updateProfile } from '@/lib/actions/profile'
+import AvailabilitySelector from './AvailabilitySelector'
+import { AvailabilityData } from '@/types/availability'
 
 interface ProfileFormProps {
   profile: {
@@ -9,6 +11,7 @@ interface ProfileFormProps {
     whatsapp_number: string | null
     email_notifications_enabled: boolean
     whatsapp_notifications_enabled: boolean
+    availability?: AvailabilityData | null
   }
 }
 
@@ -17,6 +20,9 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
   const [whatsappNumber, setWhatsappNumber] = useState(profile.whatsapp_number || '')
   const [emailNotifications, setEmailNotifications] = useState(profile.email_notifications_enabled)
   const [whatsappNotifications, setWhatsappNotifications] = useState(profile.whatsapp_notifications_enabled)
+  const [availability, setAvailability] = useState<AvailabilityData | null>(
+    profile.availability || null
+  )
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
@@ -30,6 +36,7 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
       whatsapp_number: whatsappNumber,
       email_notifications_enabled: emailNotifications,
       whatsapp_notifications_enabled: whatsappNotifications,
+      availability: availability,
     })
 
     setLoading(false)
@@ -124,6 +131,17 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Availability Settings */}
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+        <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
+          Availability Settings
+        </h3>
+        <AvailabilitySelector
+          value={availability}
+          onChange={setAvailability}
+        />
       </div>
 
       {/* Message */}
