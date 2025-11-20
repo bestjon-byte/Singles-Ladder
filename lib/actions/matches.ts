@@ -112,7 +112,7 @@ export async function submitMatchScore(params: SubmitScoreParams) {
 
     // Update challenge status to completed
     if (match.challenge_id) {
-      await supabase
+      const { data: challengeData } = await supabase
         .from('challenges')
         .update({
           status: 'completed',
@@ -120,6 +120,24 @@ export async function submitMatchScore(params: SubmitScoreParams) {
           updated_at: new Date().toISOString(),
         })
         .eq('id', match.challenge_id)
+        .select('is_wildcard, challenger_id, season_id')
+        .single()
+
+      // Consume wildcard now that the match is completed
+      if (challengeData?.is_wildcard) {
+        const { error: wildcardError } = await supabase
+          .from('wildcard_usage')
+          .insert({
+            season_id: challengeData.season_id,
+            user_id: challengeData.challenger_id,
+            challenge_id: match.challenge_id,
+          })
+
+        if (wildcardError) {
+          console.error('Error recording wildcard usage:', wildcardError)
+          // Don't fail the match submission if wildcard tracking fails
+        }
+      }
     }
 
     // Update ladder positions if this was a challenge match
