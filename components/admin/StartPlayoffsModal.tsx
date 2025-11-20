@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { startPlayoffs } from '@/lib/actions/playoffs'
 import { createClient } from '@/lib/supabase/client'
@@ -26,11 +26,7 @@ export default function StartPlayoffsModal({
   const [error, setError] = useState<string | null>(null)
   const [confirmation, setConfirmation] = useState('')
 
-  useEffect(() => {
-    fetchTopPlayers()
-  }, [seasonId])
-
-  const fetchTopPlayers = async () => {
+  const fetchTopPlayers = useCallback(async () => {
     setFetchingPlayers(true)
     const supabase = createClient()
 
@@ -53,7 +49,11 @@ export default function StartPlayoffsModal({
     }
 
     setFetchingPlayers(false)
-  }
+  }, [seasonId])
+
+  useEffect(() => {
+    fetchTopPlayers()
+  }, [fetchTopPlayers])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -289,7 +289,7 @@ export default function StartPlayoffsModal({
               {hasEnoughPlayers && (
                 <div>
                   <label htmlFor="confirmation" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Type <strong>"START PLAYOFFS"</strong> to confirm
+                    Type <strong>&quot;START PLAYOFFS&quot;</strong> to confirm
                   </label>
                   <input
                     id="confirmation"

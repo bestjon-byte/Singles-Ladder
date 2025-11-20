@@ -4,7 +4,7 @@ import { Trophy } from 'lucide-react'
 import type { PlayoffBracket, User } from '@/types'
 import PlayoffMatchCard from './PlayoffMatchCard'
 import { createClient } from '@/lib/supabase/client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 interface PlayoffBracketViewProps {
   bracket: PlayoffBracket
@@ -18,11 +18,7 @@ export default function PlayoffBracketView({
   const [matches, setMatches] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchMatches()
-  }, [bracket.season_id])
-
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     const supabase = createClient()
     const { data } = await supabase
       .from('matches')
@@ -32,7 +28,11 @@ export default function PlayoffBracketView({
 
     setMatches(data || [])
     setLoading(false)
-  }
+  }, [bracket.season_id])
+
+  useEffect(() => {
+    fetchMatches()
+  }, [fetchMatches])
 
   const bracketData = bracket.bracket_data
   const isComplete = !!bracketData.winnerId
