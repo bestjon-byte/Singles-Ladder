@@ -69,7 +69,8 @@ BEGIN
 END $$;
 
 -- 6. Create indexes for playoff queries
-CREATE INDEX IF NOT EXISTS idx_matches_playoff ON matches(season_id, match_type, round_number) WHERE match_type IN ('quarterfinal', 'semifinal', 'final');
+-- Note: Partial index with new enum value removed to avoid transaction commit issue
+CREATE INDEX IF NOT EXISTS idx_matches_playoff ON matches(season_id, match_type, round_number);
 CREATE INDEX IF NOT EXISTS idx_playoff_brackets_season ON playoff_brackets(season_id);
 CREATE INDEX IF NOT EXISTS idx_seasons_playoff_winner ON seasons(playoff_winner_id) WHERE playoff_winner_id IS NOT NULL;
 
