@@ -6,5 +6,6 @@ export async function POST(request: Request) {
 
   await supabase.auth.signOut()
 
-  return NextResponse.redirect(new URL('/auth/login', request.url))
+  // Use 303 status for POST-redirect-GET pattern to prevent blank screen
+  return NextResponse.redirect(new URL('/auth/login', request.url), 303)
 }

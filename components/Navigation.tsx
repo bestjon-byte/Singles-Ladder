@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { Menu, X, Trophy, Target, Award, User, Settings, BookOpen } from 'lucide-react'
 import { useState } from 'react'
 import { NotificationBell } from './notifications/NotificationBell'
+import { SignOutButton } from './SignOutButton'
 
 interface NavigationProps {
   isAdmin?: boolean
@@ -90,14 +91,9 @@ export default function Navigation({ isAdmin = false, userName }: NavigationProp
             </div>
 
             {/* Sign out button */}
-            <form action="/auth/signout" method="post" className="ml-2">
-              <button
-                type="submit"
-                className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-              >
-                Sign out
-              </button>
-            </form>
+            <div className="ml-2">
+              <SignOutButton className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" />
+            </div>
           </div>
 
           {/* Mobile menu button and notification bell */}
@@ -162,14 +158,9 @@ export default function Navigation({ isAdmin = false, userName }: NavigationProp
               User Guide
             </Link>
 
-            <form action="/auth/signout" method="post" className="pt-2">
-              <button
-                type="submit"
-                className="w-full text-left px-4 py-3 rounded-lg text-base font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-              >
-                Sign out
-              </button>
-            </form>
+            <div className="pt-2">
+              <SignOutButton className="w-full text-left px-4 py-3 rounded-lg text-base font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" />
+            </div>
           </div>
         </div>
       )}
