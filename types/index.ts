@@ -112,8 +112,8 @@ export interface Match {
   id: string
   challenge_id?: string
   season_id: string
-  player1_id: string
-  player2_id: string
+  player1_id: string | null  // Nullable for playoff matches not yet fully determined
+  player2_id: string | null  // Nullable for playoff matches not yet fully determined
   match_type: MatchType
   match_date?: string
   location?: string

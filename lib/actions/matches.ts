@@ -60,6 +60,11 @@ export async function submitMatchScore(params: SubmitScoreParams) {
       return { error: 'Match not found' }
     }
 
+    // Verify match has both players (playoff matches may be partially created)
+    if (!match.player1_id || !match.player2_id) {
+      return { error: 'Match is not ready yet - waiting for previous round to complete' }
+    }
+
     // Verify user is one of the players
     if (match.player1_id !== user.id && match.player2_id !== user.id) {
       return { error: 'You are not authorized to submit scores for this match' }
