@@ -41,7 +41,10 @@ export default function PlayoffMatchCard({
 
   const handleScoreSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!matchDbId) return
+    if (!matchDbId) {
+      setError('Match not found in database. Please refresh the page or contact support.')
+      return
+    }
 
     setLoading(true)
     setError(null)

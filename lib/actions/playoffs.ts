@@ -567,17 +567,15 @@ export async function progressToNextRound(matchId: string) {
         matchData.player2_seed = match.winner_id === match.player1_id ? match.player1_seed : match.player2_seed
       }
 
-      // Only create match if we have both players
-      if (matchData.player1_id && matchData.player2_id) {
-        const { data: newMatch } = await serviceClient
-          .from('matches')
-          .insert(matchData)
-          .select()
-          .single()
+      // Create match immediately with first player, will be updated with second player later
+      const { data: newMatch } = await serviceClient
+        .from('matches')
+        .insert(matchData)
+        .select()
+        .single()
 
-        if (newMatch) {
-          nextMatch.matchId = newMatch.id
-        }
+      if (newMatch) {
+        nextMatch.matchId = newMatch.id
       }
     }
 
